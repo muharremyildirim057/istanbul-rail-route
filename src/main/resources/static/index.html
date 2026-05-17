@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstanbul Rail-Route - Giriş & Kayıt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .metro-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+        }
+    </style>
+</head>
+<body class="metro-gradient min-h-screen flex items-center justify-center p-4 font-sans text-gray-800">
+
+<div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+
+    <div class="p-6 bg-gray-900 text-white text-center border-b-4 border-red-600">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-600 mb-3 shadow-lg">
+            <i class="fa-solid fa-train-subway text-2xl text-white"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold tracking-wide">ISTANBUL RAIL-ROUTE</h1>
+        <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest font-semibold">Ulaşım ve Akıllı Yönlendirme Sistemi</p>
+    </div>
+
+    <div class="flex border-b border-gray-200 bg-gray-50">
+        <button id="tab-login" onclick="switchAuthTab('login')" class="w-1/2 py-3.5 text-center font-bold text-blue-900 border-b-2 border-blue-900 bg-white transition-all outline-none">
+            <i class="fa-solid fa-right-to-bracket mr-2"></i>Giriş Yap
+        </button>
+        <button id="tab-register" onclick="switchAuthTab('register')" class="w-1/2 py-3.5 text-center font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all outline-none">
+            <i class="fa-solid fa-user-plus mr-2"></i>Kayıt Ol
+        </button>
+    </div>
+
+    <div class="p-8 space-y-6">
+
+        <div id="auth-notification" class="hidden p-3 rounded-lg text-sm font-semibold flex items-center shadow-inner">
+            <i id="auth-notif-icon" class="mr-2 text-base"></i>
+            <span id="auth-notif-text"></span>
+        </div>
+
+        <form id="form-login" onsubmit="submitLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kullanıcı Adı</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" id="login-username" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none transition-all placeholder-gray-300" placeholder="Kullanıcı adınız">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Şifre</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" id="login-password" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-900 focus:border-transparent outline-none transition-all placeholder-gray-300" placeholder="••••••••">
+                </div>
+            </div>
+            <button type="submit" class="w-full bg-blue-900 hover:bg-blue-950 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all active:scale-[0.99] cursor-pointer mt-2">
+                Sisteme Giriş Yap <i class="fa-solid fa-arrow-right ml-1"></i>
+            </button>
+        </form>
+
+        <form id="form-register" onsubmit="submitRegister(event)" class="space-y-4 hidden">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Adınız</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-id-badge"></i></span>
+                    <input type="text" id="register-firstname" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition-all" placeholder="Örn: Ayhan">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Soyadınız</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-id-badge"></i></span>
+                    <input type="text" id="register-lastname" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition-all" placeholder="Örn: Yılmaz">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Yeni Kullanıcı Adı</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-user-tag"></i></span>
+                    <input type="text" id="register-username" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition-all placeholder-gray-300" placeholder="Örn: istanbul_yolcusu">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Şifre</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-key"></i></span>
+                    <input type="password" id="register-password" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition-all placeholder-gray-300" placeholder="••••••••">
+                </div>
+            </div>
+            <div class="bg-red-50 p-3 rounded-lg border border-red-100 flex items-start">
+                <i class="fa-solid fa-circle-info text-red-500 mt-0.5 mr-2 text-sm"></i>
+                <p class="text-xs text-red-700 leading-relaxed">Kayıt işleminin ardından adınıza otomatik olarak <strong>0 TL bakiyeli</strong> Sanal İstanbulkart tahsis edilecektir.</p>
+            </div>
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all active:scale-[0.99] cursor-pointer mt-2">
+                Hesap Oluştur & Kartı Tanımla <i class="fa-solid fa-user-plus ml-1"></i>
+            </button>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    // Giriş ve kayıt pencereleri arası dinamik sekme değişimi
+    function switchAuthTab(type) {
+        var tabLogin = document.getElementById('tab-login');
+        var tabRegister = document.getElementById('tab-register');
+        var formLogin = document.getElementById('form-login');
+        var formRegister = document.getElementById('form-register');
+        document.getElementById('auth-notification').classList.add('hidden');
+
+        if (type === 'login') {
+            tabLogin.className = 'w-1/2 py-3.5 text-center font-bold text-blue-900 border-b-2 border-blue-900 bg-white transition-all outline-none';
+            tabRegister.className = 'w-1/2 py-3.5 text-center font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all outline-none';
+            formLogin.classList.remove('hidden');
+            formRegister.classList.add('hidden');
+        } else {
+            tabRegister.className = 'w-1/2 py-3.5 text-center font-bold text-red-600 border-b-2 border-red-600 bg-white transition-all outline-none';
+            tabLogin.className = 'w-1/2 py-3.5 text-center font-bold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-all outline-none';
+            formRegister.classList.remove('hidden');
+            formLogin.classList.add('hidden');
+        }
+    }
+
+    // Bildirim Mesajı Yönetimi (Tırnak çakışmaları temizlendi)
+    function showAuthNotification(text, type) {
+        var notif = document.getElementById('auth-notification');
+        var icon = document.getElementById('auth-notif-icon');
+        var msg = document.getElementById('auth-notif-text');
+
+        msg.innerText = text;
+        notif.className = 'p-3 rounded-lg text-sm font-semibold flex items-center shadow-inner';
+        icon.className = 'fa-solid mr-2 text-base';
+
+        if (type === 'success') {
+            notif.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-200');
+            icon.classList.add('fa-circle-check');
+        } else {
+            notif.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-200');
+            icon.classList.add('fa-triangle-exclamation');
+        }
+        notif.classList.remove('hidden');
+    }
+
+    // 1. BACKEND KAYIT İSTEĞİ (POST /api/auth/register)
+    async function submitRegister(event) {
+        event.preventDefault();
+        var usernameInput = document.getElementById('register-username').value;
+        var passwordInput = document.getElementById('register-password').value;
+        var firstNameInput = document.getElementById('register-firstname').value;
+        var lastNameInput = document.getElementById('register-lastname').value;
+
+        try {
+            var response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: usernameInput,
+                    password: passwordInput,
+                    firstName: firstNameInput,
+                    lastName: lastNameInput
+                })
+            });
+
+            if (response.status === 201) {
+                showAuthNotification('Kayıt Başarılı! Otomatik olarak giriş sekmesine yönlendiriliyorsunuz.', 'success');
+                document.getElementById('form-register').reset();
+                setTimeout(function() { switchAuthTab('login'); }, 1500);
+            } else {
+                var errorObj = await response.json();
+                showAuthNotification(errorObj.errors ? errorObj.errors[0] : 'Kayıt sırasında bir hata oluştu!', 'error');
+            }
+        } catch (error) {
+            showAuthNotification('Backend sunucusuna bağlanılamadı!', 'error');
+        }
+    }
+
+    // 2. BACKEND GİRİŞ İSTEĞİ VE YÖNLENDİRME (POST /api/auth/login)
+    async function submitLogin(event) {
+        event.preventDefault();
+        var usernameInput = document.getElementById('login-username').value;
+        var passwordInput = document.getElementById('login-password').value;
+
+        try {
+            var response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: usernameInput, password: passwordInput })
+            });
+
+            if (response.ok) {
+                var user = await response.json();
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                showAuthNotification('Giriş Başarılı! Kontrol paneline aktarılıyorsunuz...', 'success');
+
+                // Giriş onaylandığı an tarayıcıyı resmi olarak dashboard.html'e uçuruyoruz
+                setTimeout(function() {
+                    window.location.href = '/dashboard.html';
+                }, 1000);
+            } else {
+                var errorObj = await response.json();
+                showAuthNotification(errorObj.errors ? errorObj.errors[0] : 'Giriş başarısız! Bilgilerinizi kontrol edin.', 'error');
+            }
+        } catch (error) {
+            showAuthNotification('Backend sunucusuna bağlanılamadı!', 'error');
+        }
+    }
+
+    // Açık Oturum Kontrolü (Güvenlik Duvarı)
+    window.onload = function() {
+        if (localStorage.getItem('currentUser')) {
+            window.location.href = '/dashboard.html';
+        }
+    }
+</script>
+</body>
+</html>
