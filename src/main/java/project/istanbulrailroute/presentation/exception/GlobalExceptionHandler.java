@@ -3,12 +3,12 @@ package project.istanbulrailroute.presentation.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import project.istanbulrailroute.domain.models.exception.passengerException.InvalidCredentialsException;
-import project.istanbulrailroute.domain.models.exception.passengerException.UserAlreadyExistsException;
-import project.istanbulrailroute.domain.models.exception.virtualCardException.InvalidCardException;
+import project.istanbulrailroute.domain.exception.passengerException.InvalidCredentialsException;
+import project.istanbulrailroute.domain.exception.passengerException.UserAlreadyExistsException;
+import project.istanbulrailroute.domain.exception.virtualCardException.InvalidCardException;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestControllerAdvice
@@ -45,5 +45,11 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errorList);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleAdminExceptions(RuntimeException ex) {
+        ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), Collections.singletonList(ex.getMessage()));
+        return ResponseEntity.badRequest().body(error);
     }
 }

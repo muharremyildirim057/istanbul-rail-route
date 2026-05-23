@@ -4,17 +4,17 @@ package project.istanbulrailroute.domain.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import project.istanbulrailroute.domain.models.enums.LineType;
 import project.istanbulrailroute.domain.models.enums.StationStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "stations")
+@Table(name = "lines")
 @Data
 @NoArgsConstructor
-public class Station {
+public class Line {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +24,10 @@ public class Station {
     private String name;     // Durak adı (Ör: Yenikapı)
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private StationStatus status = StationStatus.ACTIVE;   // "Operational", "OutOfService", "Maintenance" vb.
+    @Column(name = "line_type",nullable = false)
+    private LineType type;
 
-    @OneToMany(mappedBy = "startStation", cascade = CascadeType.ALL)
-    @ToString.Exclude
+    @OneToMany(mappedBy = "line", cascade = CascadeType.ALL)
     private List<StationConnection> connections = new ArrayList<>();
 
 

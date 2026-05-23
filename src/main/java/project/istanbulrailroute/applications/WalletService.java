@@ -3,7 +3,7 @@ package project.istanbulrailroute.applications;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import project.istanbulrailroute.domain.models.Passenger;
-import project.istanbulrailroute.domain.models.exception.virtualCardException.InvalidCardException;
+import project.istanbulrailroute.domain.exception.virtualCardException.InvalidCardException;
 import project.istanbulrailroute.infrastructure.jpa.UserRepository;
 
 @Service

@@ -1,13 +1,10 @@
 package project.istanbulrailroute.applications;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.istanbulrailroute.domain.models.Passenger;
-import project.istanbulrailroute.domain.models.VirtualCard;
-import project.istanbulrailroute.domain.models.exception.passengerException.InvalidCredentialsException;
-import project.istanbulrailroute.domain.models.exception.passengerException.UserAlreadyExistsException;
+import project.istanbulrailroute.domain.exception.passengerException.InvalidCredentialsException;
+import project.istanbulrailroute.domain.exception.passengerException.UserAlreadyExistsException;
 import project.istanbulrailroute.infrastructure.jpa.UserRepository;
 
 @Service

@@ -1,4 +1,4 @@
-package project.istanbulrailroute.domain.models.exception.virtualCardException;
+package project.istanbulrailroute.domain.exception.virtualCardException;
 
 public class InvalidCardException extends RuntimeException{
     public InvalidCardException(String message){

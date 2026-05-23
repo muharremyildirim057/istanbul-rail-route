@@ -1,25 +1,41 @@
 package project.istanbulrailroute.domain.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
-import org.springframework.data.neo4j.core.schema.Id;
-import org.springframework.data.neo4j.core.schema.RelationshipProperties;
-import org.springframework.data.neo4j.core.schema.TargetNode;
+import lombok.ToString;
 
-@RelationshipProperties
+
+@Entity
 @Data
+@Table(name = "station_connections")
 @NoArgsConstructor
 public class StationConnection {
 
     @Id
-    @GeneratedValue
-    private Long id; // Spring Data Neo4j'nin güvenli güncellemeler için aradığı eksik ID alanı!
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String lineName;   // M2, Marmaray, T1 vb. (Cheapest Fare stratejisi için)
-    private int travelTime;    // Dakika cinsinden süre (Shortest Time stratejisi için)
-    private double fare;       // Hat bazlı tarife/ücret bilgisi (Cheapest Fare için)
+    @ManyToOne
+    @JoinColumn(name = "start_id")
+    @JsonIgnore
+    @ToString.Exclude
+    private Station startStation;
 
-    @TargetNode
-    private Station targetStation; // Bağlanılan hedef durak
+    @ManyToOne
+    @JoinColumn(name = "target_id")
+    @JsonIgnore
+    @ToString.Exclude
+    private Station targetStation;
+
+    @Column(name = "travel_time", nullable = false)
+    private double duration; // Dakika bazlı ağırlık
+
+    @ManyToOne
+    @JoinColumn(name = "line_id", nullable = false)
+    @JsonIgnore
+    @ToString.Exclude
+    private Line line; // Hangi hat?
+
 }
