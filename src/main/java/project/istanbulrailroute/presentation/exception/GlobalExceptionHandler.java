@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import project.istanbulrailroute.domain.exception.passengerException.InvalidCredentialsException;
 import project.istanbulrailroute.domain.exception.passengerException.UserAlreadyExistsException;
+import project.istanbulrailroute.domain.exception.passengerException.UserNotFoundException;
 import project.istanbulrailroute.domain.exception.virtualCardException.InvalidCardException;
 
 import java.util.Collections;
@@ -51,5 +52,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAdminExceptions(RuntimeException ex) {
         ErrorResponse error = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), Collections.singletonList(ex.getMessage()));
         return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        List<String> errorList = List.of(ex.getLocalizedMessage());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), errorList);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 }

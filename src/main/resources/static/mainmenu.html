@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Istanbul Rail Route - Main Menu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #1a1a2e;
+            background-image: radial-gradient(circle at center, #16213e 0%, #0f3460 100%);
+            display: flex;
+            height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 20px;
+        }
+        .sidebar-top {
+            width: 100%;
+        }
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .menu-btn:hover {
+            background: #e94560;
+            border-color: #e94560;
+            box-shadow: 0 0 12px rgba(233, 69, 96, 0.4);
+            transform: translateX(5px);
+        }
+        .admin-option {
+            border: 1px dashed rgba(233, 69, 96, 0.5);
+        }
+        .admin-option:hover {
+            background: #e94560;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 75, 75, 0.2);
+            border-color: #ff4b4b;
+            box-shadow: none;
+            transform: none;
+        }
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .dashboard-top {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            flex: 1;
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #e94560;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .info-group {
+            margin-bottom: 15px;
+        }
+        .info-label {
+            font-size: 10px;
+            color: #a2a2a2;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .info-value {
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .balance-box {
+            display: flex;
+            align-items: baseline;
+        }
+        .balance-amount {
+            font-size: 38px;
+            font-weight: 700;
+        }
+        .balance-currency {
+            font-size: 20px;
+            color: #e94560;
+            margin-left: 5px;
+        }
+        .explorer-section {
+            width: 100%;
+            max-width: 1000px;
+        }
+        .explorer-section h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #fff;
+            border-left: 4px solid #e94560;
+            padding-left: 15px;
+        }
+        .line-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .line-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .line-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .line-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #fff;
+        }
+        .line-type {
+            font-size: 11px;
+            color: #a2a2a2;
+            text-transform: uppercase;
+        }
+        .station-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        .station-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .station-list::-webkit-scrollbar-thumb {
+            background: #e94560;
+            border-radius: 10px;
+        }
+        .station-item {
+            font-size: 13px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .station-item::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #e94560;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-top">
+        <div class="brand">Istanbul Rail Route</div>
+        <div class="menu-options">
+            <a href="route.html" class="menu-btn">Calculate Route</a>
+            <a href="payment.html" class="menu-btn">Top-up Balance</a>
+            <a href="adminpanel.html" id="admin-nav" class="menu-btn admin-option hidden">Edit Lines</a>
+        </div>
+    </div>
+    <a href="index.html" class="menu-btn logout-btn">Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="dashboard-top">
+        <div class="card">
+            <h3>Passenger Profile</h3>
+            <div class="info-group">
+                <div class="info-label">Username</div>
+                <div id="info-username" class="info-value">...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Full Name</div>
+                <div id="info-fullname" class="info-value">...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Account Role</div>
+                <div id="info-role" class="info-value">...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Card Balance</h3>
+            <div class="info-group">
+                <div class="info-label">Available Balance</div>
+                <div class="balance-box">
+                    <div id="info-balance" class="balance-amount">...</div>
+                    <div class="balance-currency">₺</div>
+                </div>
+            </div>
+            <a href="payment.html" style="text-decoration: none; color: #e94560; font-size: 13px; font-weight: 600;">+ Yükleme Yap</a>
+        </div>
+    </div>
+
+    <div class="explorer-section">
+        <h2>Network Explorer</h2>
+        <div id="line-grid" class="line-grid">
+        </div>
+    </div>
+</div>
+
+<script>
+    const lineColors = {
+        'M1A': '#f10d1a', 'M1B': '#f10d1a', 'M2': '#008f4c', 'M3': '#00adef',
+        'M4': '#e81d8c', 'M5': '#6d3a95', 'M7': '#f68b1e', 'M8': '#005596', 'M9': '#fcc917',
+        'T1': '#005a91', 'T4': '#f68b1e', 'B1': '#007cc3', 'Metrobüs': '#f68b1e'
+    };
+
+    const username = localStorage.getItem('username');
+
+    if (!username) {
+        window.location.href = 'index.html';
+    } else {
+        // Kullanıcı Bilgilerini Getir
+        fetch('/api/auth/me?username=' + username)
+            .then(res => res.json())
+            .then(user => {
+                if (user.role === "ADMIN") document.getElementById('admin-nav').classList.remove('hidden');
+                document.getElementById('info-username').textContent = user.username;
+                document.getElementById('info-fullname').textContent = user.firstName + " " + user.lastName;
+                document.getElementById('info-role').textContent = user.role;
+                document.getElementById('info-balance').textContent = (user.virtualCard?.balance || 0).toFixed(2);
+            });
+
+        // Hat Bilgilerini Getir
+        fetch('/api/lines/details')
+            .then(res => res.json())
+            .then(lines => {
+                const grid = document.getElementById('line-grid');
+                lines.forEach(line => {
+                    const color = lineColors[line.name] || '#444';
+                    const stationsHtml = line.stations.map(s => `<div class="station-item">${s}</div>`).join('');
+
+                    grid.innerHTML += `
+                        <div class="line-card">
+                            <div class="line-header">
+                                <div class="line-badge" style="background: ${color}">${line.name}</div>
+                                <div class="line-type">${line.type}</div>
+                            </div>
+                            <div class="station-list">
+                                ${stationsHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+    }
+
+    document.querySelector('.logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('username');
+    });
+</script>
+</body>
+</html>

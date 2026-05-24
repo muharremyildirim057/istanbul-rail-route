@@ -1,162 +1,381 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İstanbul Rail-Route - Bakiye Yükleme</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Istanbul Rail Route - Top-up Balance</title>
     <style>
-        .metro-gradient {
-            background: linear-gradient(135deg, #1e3a8a 0%, #dc2626 100%);
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #1a1a2e;
+            background-image: radial-gradient(circle at center, #16213e 0%, #0f3460 100%);
+            display: flex;
+            height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 20px;
+        }
+        .sidebar-top {
+            width: 100%;
+        }
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .menu-btn:hover, .menu-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+            box-shadow: 0 0 12px rgba(233, 69, 96, 0.4);
+            transform: translateX(5px);
+        }
+        .admin-option {
+            border: 1px dashed rgba(233, 69, 96, 0.5);
+        }
+        .admin-option:hover {
+            background: #e94560;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 75, 75, 0.2);
+            border-color: #ff4b4b;
+            box-shadow: none;
+            transform: none;
+        }
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .payment-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 500px;
+        }
+        .payment-card h2 {
+            font-size: 24px;
+            color: #e94560;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .balance-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #a2a2a2;
+            font-size: 14px;
+        }
+        .balance-info span {
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+            color: #fff;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+        input:focus {
+            border-color: #e94560;
+            outline: none;
+            box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .col {
+            flex: 1;
+        }
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .quick-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .quick-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: #e94560;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        .submit-btn:hover {
+            background: #d63d56;
+        }
+        .msg-box {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+            line-height: 1.5;
+        }
+        .msg-box.error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        .msg-box.success {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ed573;
+            border: 1px solid rgba(46, 213, 115, 0.3);
         }
     </style>
 </head>
-<body class="metro-gradient min-h-screen flex items-center justify-center p-4 font-sans text-gray-800">
-
-<div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 md:p-8 space-y-6 border border-gray-100 relative">
-
-    <div id="payment-notification" class="hidden p-3 rounded-lg text-sm font-semibold flex items-center shadow-inner transition-all">
-        <i id="payment-notif-icon" class="mr-2 text-base shrink-0"></i>
-        <span id="payment-notif-text"></span>
-    </div>
-
-    <div class="text-center">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-green-50 text-green-600 text-2xl shadow-sm mb-2">
-            <i class="fa-solid fa-wallet"></i>
+<body>
+<div class="sidebar">
+    <div class="sidebar-top">
+        <div class="brand">Istanbul Rail Route</div>
+        <div class="menu-options">
+            <a href="mainmenu.html" class="menu-btn">Dashboard</a>
+            <a href="route.html" class="menu-btn">Calculate Route</a>
+            <a href="payment.html" class="menu-btn active">Top-up Balance</a>
+            <a href="adminpanel.html" id="admin-nav" class="menu-btn admin-option hidden">Edit Lines</a>
         </div>
-        <h2 class="text-xl font-black text-gray-900 tracking-tight">Güvenli Bakiye Yükleme</h2>
-        <p class="text-xxs text-gray-400 font-bold uppercase tracking-widest mt-0.5">Sanal İstanbulkart Ödeme Paneli</p>
     </div>
+    <a href="index.html" class="menu-btn logout-btn">Logout</a>
+</div>
 
-    <div class="bg-slate-50 border border-gray-100 rounded-xl p-4 text-center shadow-inner">
-        <p class="text-xxs font-black text-gray-400 uppercase tracking-widest mb-1">Mevcut Kart Bakiyeniz</p>
-        <h3 id="current-balance-text" class="text-3xl font-black text-blue-900 tracking-wide">0.00 TL</h3>
+<div class="main-content">
+    <div class="payment-card">
+        <h2>Top-up Account</h2>
+        <div class="balance-info">Current Balance: <span id="current-balance">0.00</span> ₺</div>
+
+        <div id="message-box" class="msg-box"></div>
+
+        <form id="paymentForm">
+            <div class="form-group">
+                <label>Card Number</label>
+                <input type="text" id="cardNumber" placeholder="0000 0000 0000 0000" maxlength="19" required>
+            </div>
+
+            <div class="row">
+                <div class="col form-group">
+                    <label>Expiry Date</label>
+                    <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" required>
+                </div>
+                <div class="col form-group">
+                    <label>CVV</label>
+                    <input type="password" id="cvv" placeholder="123" maxlength="3" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Amount (₺)</label>
+                <input type="number" id="amount" placeholder="Min 30 ₺ - Max 3500 ₺" min="30" max="3500" required>
+            </div>
+
+            <div class="quick-amounts">
+                <button type="button" class="quick-btn" onclick="setAmount(50)">+50 ₺</button>
+                <button type="button" class="quick-btn" onclick="setAmount(100)">+100 ₺</button>
+                <button type="button" class="quick-btn" onclick="setAmount(200)">+200 ₺</button>
+                <button type="button" class="quick-btn" onclick="setAmount(500)">+500 ₺</button>
+            </div>
+
+            <button type="submit" class="submit-btn">Complete Payment</button>
+        </form>
     </div>
-
-    <form onsubmit="submitPayment(event)" class="space-y-4">
-        <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Kredi Kartı Numarası (Luhn Denetimli)</label>
-            <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-credit-card"></i>
-                    </span>
-                <input type="text" id="input-cc" required class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all placeholder-gray-300 text-sm font-medium tracking-wide" placeholder="Örn: 49927398716">
-            </div>
-        </div>
-
-        <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Yüklenecek Tutar (TL)</label>
-            <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fa-solid fa-turkish-lira-sign"></i>
-                    </span>
-                <input type="number" id="input-amount" required min="1" step="0.5" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition-all placeholder-gray-300 text-sm font-bold" placeholder="100">
-            </div>
-            <div class="mt-2 flex flex-col space-y-0.5 text-[10px] text-gray-400 font-semibold uppercase tracking-wider bg-gray-50 p-2 rounded-lg border border-gray-100">
-                <span>• Minimum Yükleme: 30 TL</span>
-                <span>• Maksimum Yükleme: 3500 TL</span>
-                <span>• Toplam Kart Limiti: 5000 TL</span>
-            </div>
-        </div>
-
-        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all active:scale-[0.99] cursor-pointer mt-2">
-            <i class="fa-solid fa-shield-halved mr-1"></i> Sistemi Tetikle & Bakiye Yükle
-        </button>
-    </form>
-
-    <div class="text-center pt-2">
-        <button onclick="window.location.href='/dashboard.html'" class="text-xs font-bold text-gray-400 hover:text-gray-600 transition-all cursor-pointer outline-none">
-            <i class="fa-solid fa-arrow-left mr-1"></i> Ana Menüye Geri Dön
-        </button>
-    </div>
-
 </div>
 
 <script>
-    var currentUser = null;
+    let currentUserId = null;
+    const username = localStorage.getItem('username');
 
-    // Sayfa ilk yüklendiğinde oturumu doğrula ve mevcut bakiyeyi merkeze yaz
-    window.onload = function() {
-        var savedUser = localStorage.getItem('currentUser');
+    if (!username) {
+        window.location.href = 'index.html';
+    } else {
+        fetch('/api/auth/me?username=' + username)
+            .then(response => {
+                if (!response.ok) throw new Error();
+                return response.json();
+            })
+            .then(user => {
+                currentUserId = user.id;
+                if (user.role === "ADMIN") {
+                    document.getElementById('admin-nav').classList.remove('hidden');
+                }
+                const balance = user.virtualCard && user.virtualCard.balance !== undefined ? user.virtualCard.balance : 0;
+                document.getElementById('current-balance').textContent = balance.toFixed(2);
+            })
+            .catch(() => {
+                localStorage.removeItem('username');
+                window.location.href = 'index.html';
+            });
+    }
 
-        if (!savedUser) {
-            window.location.href = '/index.html';
+    document.querySelector('.logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('username');
+    });
+
+    document.getElementById('cardNumber').addEventListener('input', function (e) {
+        let target = e.target;
+        let val = target.value.replace(/\D/g, '');
+        val = val.replace(/(.{4})/g, '$1 ').trim();
+        target.value = val;
+    });
+
+    document.getElementById('expiry').addEventListener('input', function (e) {
+        let target = e.target;
+        let val = target.value.replace(/\D/g, '');
+        if (val.length >= 3) {
+            val = val.substring(0, 2) + '/' + val.substring(2, 4);
+        }
+        target.value = val;
+    });
+
+    document.getElementById('cvv').addEventListener('input', function (e) {
+        this.value = this.value.replace(/\D/g, '');
+    });
+
+    function setAmount(val) {
+        document.getElementById('amount').value = val;
+    }
+
+    document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msgBox = document.getElementById('message-box');
+        msgBox.style.display = 'none';
+        msgBox.className = 'msg-box';
+
+        if (!currentUserId) {
+            msgBox.textContent = 'User validation error. Please log in again.';
+            msgBox.classList.add('error');
+            msgBox.style.display = 'block';
             return;
         }
 
-        currentUser = JSON.parse(savedUser);
-
-        // Ekranın tam ortasındaki bakiye alanını iki basamaklı (fixed) güncelliyoruz
-        if (currentUser.virtualCard && currentUser.virtualCard.balance !== undefined) {
-            document.getElementById('current-balance-text').innerText = currentUser.virtualCard.balance.toFixed(2) + ' TL';
-        }
-    };
-
-    // Bildirim Mesajı Yönetimi (Tırnak çakışmaları ve kaymalar tamamen önlendi)
-    function showNotification(text, type) {
-        var notif = document.getElementById('payment-notification');
-        var icon = document.getElementById('payment-notif-icon');
-        var msg = document.getElementById('payment-notif-text');
-
-        msg.innerText = text;
-        notif.className = 'p-3 rounded-lg text-sm font-semibold flex items-center shadow-inner mb-2';
-        icon.className = 'fa-solid mr-2 text-base';
-
-        if (type === 'success') {
-            notif.classList.add('bg-green-100', 'text-green-800', 'border', 'border-green-200');
-            icon.classList.add('fa-circle-check');
-        } else {
-            notif.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-200');
-            icon.classList.add('fa-triangle-exclamation');
-        }
-        notif.classList.remove('hidden');
-    }
-
-    // BACKEND FINANSAL TETİKLEME İŞLEMİ (POST /api/passengers/{id}/topup)
-    async function submitPayment(event) {
-        event.preventDefault();
-        document.getElementById('payment-notification').classList.add('hidden');
-
-        var ccInput = document.getElementById('input-cc').value;
-        var amountInput = parseFloat(document.getElementById('input-amount').value);
+        const rawCardNumber = document.getElementById('cardNumber').value.replace(/\s+/g, '');
+        const topupAmount = parseFloat(document.getElementById('amount').value);
 
         try {
-            // Backend'deki dinamik adresi eski usul artı (+) ile sorunsuz birleştiriyoruz
-            var response = await fetch('/api/payment/' + currentUser.id + '/topup', {
+            const response = await fetch('/api/payment/' + currentUserId + '/topup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ creditCardNumber: ccInput, amount: amountInput })
+                body: JSON.stringify({
+                    creditCardNumber: rawCardNumber,
+                    amount: topupAmount
+                })
             });
 
             if (response.ok) {
-                var updatedUser = await response.json();
+                const updatedPassenger = await response.json();
+                const newBalance = updatedPassenger.virtualCard.balance;
+                document.getElementById('current-balance').textContent = newBalance.toFixed(2);
 
-                // 1. Tarayıcı cüzdan hafızasını yeni güncel verilerle tazeliyoruz
-                localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                msgBox.textContent = 'Top-up successful! Your balance has been updated.';
+                msgBox.classList.add('success');
+                msgBox.style.display = 'block';
 
-                // 2. Ekranın ortasındaki bakiyeyi anında güncelliyoruz
-                document.getElementById('current-balance-text').innerText = updatedUser.virtualCard.balance.toFixed(2) + ' TL';
-
-                // 3. Başarı uyarısını verip tam istediğin gibi dashboard.html sayfasına yönlendiriyoruz
-                showNotification('Bakiye başarıyla yüklendi! Ana menüye aktarılıyorsunuz...', 'success');
-
-                setTimeout(function() {
-                    window.location.href = '/dashboard.html';
-                }, 1500);
+                document.getElementById('paymentForm').reset();
             } else {
-                // GlobalExceptionHandler kulesinden fırlayan List<String> kargo paketini yakalıyoruz
-                var errorObj = await response.json();
-                if (errorObj.errors && errorObj.errors.length > 0) {
-                    showNotification(errorObj.errors[0], 'error');
+                const errorData = await response.json();
+                if (errorData && errorData.errors) {
+                    msgBox.innerHTML = errorData.errors.join('<br>');
                 } else {
-                    showNotification('Cüzdan limit doğrulaması başarısız oldu!', 'error');
+                    msgBox.textContent = 'Top-up failed. Please check your card details and limits.';
                 }
+                msgBox.classList.add('error');
+                msgBox.style.display = 'block';
             }
-        } catch (error) {
-            showNotification('Finans sunucusuna bağlanılamadı!', 'error');
+        } catch (err) {
+            msgBox.textContent = 'Could not connect to the server.';
+            msgBox.classList.add('error');
+            msgBox.style.display = 'block';
         }
-    }
+    });
 </script>
 </body>
 </html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Istanbul Rail Route - Admin Panel</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #1a1a2e; background-image: radial-gradient(circle at center, #16213e 0%, #0f3460 100%); display: flex; height: 100vh; color: #fff; overflow: hidden; }
+        .sidebar { width: 280px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-right: 1px solid rgba(255, 255, 255, 0.1); display: flex; flex-direction: column; justify-content: space-between; padding: 30px 20px; }
+        .sidebar-top { width: 100%; }
+        .brand { font-size: 20px; font-weight: 700; color: #e94560; text-align: center; margin-bottom: 40px; letter-spacing: 1px; text-transform: uppercase; }
+        .menu-options { display: flex; flex-direction: column; gap: 15px; }
+        .menu-btn { display: block; width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.05); color: #fff; text-decoration: none; border-radius: 8px; font-size: 15px; font-weight: 500; transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .menu-btn:hover, .menu-btn.active { background: #e94560; border-color: #e94560; box-shadow: 0 0 12px rgba(233, 69, 96, 0.4); transform: translateX(5px); }
+        .logout-btn { background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); text-align: center; }
+        .logout-btn:hover { background: rgba(255, 75, 75, 0.2); border-color: #ff4b4b; box-shadow: none; transform: none; }
+        .main-content { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+        .admin-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); padding: 40px; border-radius: 16px; backdrop-filter: blur(10px); width: 100%; max-width: 900px; margin-bottom: 20px; }
+        .admin-card h2 { font-size: 24px; color: #e94560; margin-bottom: 25px; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 15px; }
+        .tab-btn { padding: 10px 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; }
+        .tab-btn.active, .tab-btn:hover { background: #e94560; border-color: #e94560; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 12px; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select { width: 100%; padding: 14px 15px; background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; font-size: 15px; color: #fff; transition: all 0.3s ease; }
+        input:focus, select:focus { border-color: #e94560; outline: none; box-shadow: 0 0 8px rgba(233, 69, 96, 0.4); }
+        select option { background: #1a1a2e; color: #fff; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        .action-btn { width: 100%; padding: 16px; background: #e94560; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background 0.3s; margin-top: 10px; }
+        .action-btn:hover { background: #d63d56; }
+        .msg-box { padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; text-align: center; display: none; line-height: 1.5; }
+        .msg-box.error { background: rgba(255, 107, 107, 0.1); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.3); }
+        .msg-box.success { background: rgba(46, 213, 115, 0.1); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); }
+        .search-bar { margin-top: 30px; margin-bottom: 10px; position: relative; }
+        .search-bar input { padding-left: 40px; border-color: rgba(233, 69, 96, 0.5); }
+        .search-icon { position: absolute; left: 14px; top: 15px; color: #e94560; font-size: 16px; }
+        .data-table-container { max-height: 350px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th, td { padding: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        th { background: rgba(233, 69, 96, 0.1); color: #e94560; font-weight: 600; text-transform: uppercase; font-size: 12px; position: sticky; top: 0; z-index: 10; }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .delete-btn { background: transparent; border: 1px solid rgba(255, 107, 107, 0.4); color: #ff6b6b; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+        .delete-btn:hover { background: #ff6b6b; color: #fff; }
+        .status-select { padding: 6px; font-size: 13px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; }
+        .limit-info { font-size: 11px; color: #a2a2a2; text-align: right; margin-top: 5px; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-top">
+        <div class="brand">Istanbul Rail Route</div>
+        <div class="menu-options">
+            <a href="mainmenu.html" class="menu-btn">Dashboard</a>
+            <a href="route.html" class="menu-btn">Calculate Route</a>
+            <a href="payment.html" class="menu-btn">Top-up Balance</a>
+            <a href="adminpanel.html" class="menu-btn active">Edit Lines</a>
+        </div>
+    </div>
+    <a href="index.html" class="menu-btn logout-btn">Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="admin-card">
+        <h2>Admin Management Panel</h2>
+        <div id="message-box" class="msg-box"></div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('stations-tab', this)">Stations</button>
+            <button class="tab-btn" onclick="switchTab('lines-tab', this)">Lines</button>
+            <button class="tab-btn" onclick="switchTab('connections-tab', this)">Connections</button>
+        </div>
+
+        <div id="stations-tab" class="tab-content active">
+            <form id="stationForm">
+                <div class="form-group">
+                    <label>Station Name</label>
+                    <input type="text" id="stationName" placeholder="e.g. Yenikapı" required>
+                </div>
+                <button type="submit" class="action-btn">Add Station</button>
+            </form>
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchStations" placeholder="İstasyon Ara..." oninput="renderStations(this.value)">
+            </div>
+            <div class="data-table-container">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Station Name</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="stationsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="limit-info">Showing max 40 results. Use search to filter.</div>
+        </div>
+
+        <div id="lines-tab" class="tab-content">
+            <form id="lineForm">
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Line Name</label>
+                        <input type="text" id="lineName" placeholder="e.g. M2" required>
+                    </div>
+                    <div class="col form-group">
+                        <label>Line Type</label>
+                        <select id="lineType" required>
+                            <option value="METRO">Metro</option>
+                            <option value="TRAMVAY">Tramvay</option>
+                            <option value="BANLIYO">Banliyö</option>
+                            <option value="METROBUS">Metrobüs</option>
+                            <option value="NOSTALJIK_TRAMVAY">Nostaljik Tramvay</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">Create Line</button>
+            </form>
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchLines" placeholder="Hat Ara..." oninput="renderLines(this.value)">
+            </div>
+            <div class="data-table-container">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Line Name</th><th>Type</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="linesTableBody"></tbody>
+                </table>
+            </div>
+            <div class="limit-info">Showing max 40 results. Use search to filter.</div>
+        </div>
+
+        <div id="connections-tab" class="tab-content">
+            <form id="connectionForm">
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Source Station</label>
+                        <select id="connStartId" required><option value="">Select Source</option></select>
+                    </div>
+                    <div class="col form-group">
+                        <label>Target Station</label>
+                        <select id="connTargetId" required><option value="">Select Target</option></select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Assigned Line</label>
+                        <select id="connLineId" required><option value="">Select Line</option></select>
+                    </div>
+                    <div class="col form-group">
+                        <label>Travel Time (Minutes)</label>
+                        <input type="number" id="connDuration" step="0.1" min="0.1" placeholder="e.g. 2.5" required>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">Connect Stations</button>
+            </form>
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchConnections" placeholder="Bağlantı Ara (Durak veya Hat)..." oninput="renderConnections(this.value)">
+            </div>
+            <div class="data-table-container">
+                <table>
+                    <thead>
+                    <tr><th>ID</th><th>Source</th><th>Target</th><th>Line</th><th>Time</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="connectionsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="limit-info">Showing max 40 results. Use search to filter.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const username = localStorage.getItem('username');
+    const RENDER_LIMIT = 40;
+
+    let globalStations = [];
+    let globalLines = [];
+    let globalConnections = [];
+
+    if (!username) {
+        window.location.href = 'index.html';
+    } else {
+        fetch('/api/auth/me?username=' + username)
+            .then(res => res.json())
+            .then(user => {
+                if (user.role !== "ADMIN") window.location.href = 'mainmenu.html';
+                else loadAllData();
+            })
+            .catch(() => window.location.href = 'index.html');
+    }
+
+    document.querySelector('.logout-btn').addEventListener('click', () => localStorage.removeItem('username'));
+
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function showMessage(text, isSuccess) {
+        const msgBox = document.getElementById('message-box');
+        msgBox.textContent = text;
+        msgBox.className = 'msg-box ' + (isSuccess ? 'success' : 'error');
+        msgBox.style.display = 'block';
+        setTimeout(() => msgBox.style.display = 'none', 4000);
+    }
+
+    async function loadAllData() {
+        try {
+            const stRes = await fetch('/api/stations');
+            if (stRes.ok) globalStations = await stRes.json();
+            renderStations(document.getElementById('searchStations').value);
+            populateStationSelects();
+
+            const lnRes = await fetch('/api/lines');
+            if (lnRes.ok) globalLines = await lnRes.json();
+            renderLines(document.getElementById('searchLines').value);
+            populateLineSelects();
+
+            const cnRes = await fetch('/api/stations/connections');
+            if (cnRes.ok) globalConnections = await cnRes.json();
+            renderConnections(document.getElementById('searchConnections').value);
+        } catch (err) {
+            console.error("Data load error", err);
+        }
+    }
+
+    function populateStationSelects() {
+        const optionsHtml = '<option value="">Select Station</option>' + globalStations.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        document.getElementById('connStartId').innerHTML = optionsHtml;
+        document.getElementById('connTargetId').innerHTML = optionsHtml;
+    }
+
+    function populateLineSelects() {
+        const optionsHtml = '<option value="">Select Line</option>' + globalLines.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+        document.getElementById('connLineId').innerHTML = optionsHtml;
+    }
+
+    function renderStations(filterText) {
+        const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
+        const filtered = globalStations.filter(s => s.name.toLocaleLowerCase('tr-TR').includes(searchStr) || s.id.toString().includes(searchStr));
+        const limited = filtered.slice(0, RENDER_LIMIT);
+
+        document.getElementById('stationsTableBody').innerHTML = limited.map(s => {
+            const isActive = s.status === 'ACTIVE' || !s.status;
+            return `<tr>
+                <td>${s.id}</td>
+                <td>${s.name}</td>
+                <td>
+                    <select class="status-select" onchange="updateStationStatus(${s.id}, this.value)">
+                        <option value="ACTIVE" ${isActive ? 'selected' : ''}>ACTIVE</option>
+                        <option value="MAINTENANCE" ${!isActive ? 'selected' : ''}>MAINTENANCE</option>
+                          <option value="CLOSED" ${!isActive ? 'selected' : ''}>CLOSED</option>
+
+                    </select>
+                </td>
+                <td><button class="delete-btn" onclick="deleteStation(${s.id})">Delete</button></td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderLines(filterText) {
+        const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
+        const filtered = globalLines.filter(l =>
+            l.name.toLocaleLowerCase('tr-TR').includes(searchStr) ||
+            (l.type || l.lineType || '').toLocaleLowerCase('tr-TR').includes(searchStr) ||
+            l.id.toString().includes(searchStr)
+        );
+        const limited = filtered.slice(0, RENDER_LIMIT);
+
+        document.getElementById('linesTableBody').innerHTML = limited.map(l => `
+            <tr>
+                <td>${l.id}</td>
+                <td>${l.name}</td>
+                <td>${l.type || l.lineType}</td>
+                <td><button class="delete-btn" onclick="deleteLine(${l.id})">Delete</button></td>
+            </tr>`).join('');
+    }
+
+    function renderConnections(filterText) {
+        const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
+        const filtered = globalConnections.filter(c =>
+            (c.startStationName || '').toLocaleLowerCase('tr-TR').includes(searchStr) ||
+            (c.targetStationName || '').toLocaleLowerCase('tr-TR').includes(searchStr) ||
+            (c.lineName || '').toLocaleLowerCase('tr-TR').includes(searchStr)
+        );
+        const limited = filtered.slice(0, RENDER_LIMIT);
+
+        document.getElementById('connectionsTableBody').innerHTML = limited.map(c => `
+            <tr>
+                <td>${c.id}</td>
+                <td>${c.startStationName || 'N/A'}</td>
+                <td>${c.targetStationName || 'N/A'}</td>
+                <td>${c.lineName || 'N/A'}</td>
+                <td>${c.duration} min</td>
+                <td><button class="delete-btn" onclick="deleteConnection(${c.id})">Delete</button></td>
+            </tr>`).join('');
+    }
+
+    async function deleteStation(id) {
+        if (!confirm('Bu istasyonu silmek istediğinize emin misiniz? (Bağlı hatlar varsa hata verebilir)')) return;
+        const res = await fetch(`/api/stations/${id}`, { method: 'DELETE' });
+        if (res.ok) { showMessage('İstasyon silindi.', true); loadAllData(); }
+        else { showMessage('Hata: Önce bu istasyona bağlı "Connection"ları silmelisiniz.', false); }
+    }
+
+    async function deleteLine(id) {
+        if (!confirm('Bu hattı silmek istediğinize emin misiniz? (Bağlı duraklar varsa hata verebilir)')) return;
+        const res = await fetch(`/api/lines/${id}`, { method: 'DELETE' });
+        if (res.ok) { showMessage('Hat silindi.', true); loadAllData(); }
+        else { showMessage('Hata: Önce bu hatta bağlı "Connection"ları silmelisiniz.', false); }
+    }
+
+    async function deleteConnection(id) {
+        if (!confirm('Bu bağlantıyı silmek istediğinize emin misiniz?')) return;
+        const res = await fetch(`/api/stations/connections/${id}`, { method: 'DELETE' });
+        if (res.ok) { showMessage('Bağlantı silindi.', true); loadAllData(); }
+        else { showMessage('Bağlantı silinirken hata oluştu.', false); }
+    }
+
+    async function updateStationStatus(id, newStatus) {
+        const res = await fetch(`/api/admin/stations/${id}/status?newStatus=${newStatus}`, { method: 'PUT' });
+        if (res.ok) { showMessage('Durum güncellendi.', true); loadAllData(); }
+        else { showMessage('Durum güncellenemedi.', false); }
+    }
+
+    document.getElementById('stationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/stations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: document.getElementById('stationName').value, status: 'ACTIVE' })
+        });
+        if (res.ok) { showMessage('Station added successfully!', true); document.getElementById('stationForm').reset(); loadAllData(); }
+        else showMessage('Failed to add station.', false);
+    });
+
+    document.getElementById('lineForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const res = await fetch('/api/lines', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: document.getElementById('lineName').value, type: document.getElementById('lineType').value })
+        });
+        if (res.ok) { showMessage('Line created successfully!', true); document.getElementById('lineForm').reset(); loadAllData(); }
+        else showMessage('Failed to create line.', false);
+    });
+
+    document.getElementById('connectionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const startId = document.getElementById('connStartId').value;
+        const targetId = document.getElementById('connTargetId').value;
+        if (startId === targetId) { showMessage('Source and Target stations cannot be the same.', false); return; }
+
+        const res = await fetch('/api/stations/connections', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                startStationId: startId,
+                targetStationId: targetId,
+                lineId: document.getElementById('connLineId').value,
+                duration: document.getElementById('connDuration').value
+            })
+        });
+        if (res.ok) { showMessage('Stations connected successfully!', true); document.getElementById('connectionForm').reset(); loadAllData(); }
+        else showMessage('Failed to connect stations.', false);
+    });
+</script>
+</body>
+</html>

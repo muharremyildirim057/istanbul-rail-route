@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Istanbul Rail Route - Calculate Route</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #1a1a2e;
+            background-image: radial-gradient(circle at center, #16213e 0%, #0f3460 100%);
+            display: flex;
+            height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 20px;
+        }
+        .sidebar-top {
+            width: 100%;
+        }
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .menu-btn:hover, .menu-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+            box-shadow: 0 0 12px rgba(233, 69, 96, 0.4);
+            transform: translateX(5px);
+        }
+        .admin-option {
+            border: 1px dashed rgba(233, 69, 96, 0.5);
+        }
+        .admin-option:hover {
+            background: #e94560;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 75, 75, 0.2);
+            border-color: #ff4b4b;
+            box-shadow: none;
+            transform: none;
+        }
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+        }
+        .route-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 650px;
+            margin-bottom: 20px;
+        }
+        .route-card h2 {
+            font-size: 24px;
+            color: #e94560;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 14px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 15px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            border-color: #e94560;
+            outline: none;
+            box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+        }
+        select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .col {
+            flex: 1;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 16px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        .action-btn:hover {
+            background: #d63d56;
+        }
+        .action-btn.pay-btn {
+            background: #2ed573;
+            margin-top: 25px;
+        }
+        .action-btn.pay-btn:hover {
+            background: #27ae60;
+        }
+        .result-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+        .msg-box {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+            line-height: 1.5;
+        }
+        .msg-box.error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+        .msg-box.success {
+            background: rgba(46, 213, 115, 0.1);
+            color: #2ed573;
+            border: 1px solid rgba(46, 213, 115, 0.3);
+        }
+        .balance-display {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #a2a2a2;
+        }
+        .balance-display strong {
+            color: #2ed573;
+            font-size: 18px;
+        }
+        .custom-select {
+            position: relative;
+            width: 100%;
+        }
+        .dropdown-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #16213e;
+            border: 1px solid #e94560;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-top: 5px;
+        }
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+            color: #fff;
+        }
+        .dropdown-item:hover {
+            background: #e94560;
+        }
+        .route-summary {
+            background: rgba(233, 69, 96, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(233, 69, 96, 0.3);
+        }
+        .route-summary div {
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        .route-summary strong {
+            color: #2ed573;
+            font-size: 20px;
+        }
+        .route-summary span {
+            color: #fff;
+            font-weight: bold;
+        }
+        .timeline-segment {
+            margin-bottom: 20px;
+            border-left: 3px solid #e94560;
+            padding-left: 20px;
+            position: relative;
+        }
+        .timeline-segment::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 13px;
+            height: 13px;
+            background: #e94560;
+            border-radius: 50%;
+        }
+        .segment-header {
+            font-weight: 600;
+            color: #e94560;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .segment-header span {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+        }
+        .station-dot {
+            position: relative;
+            padding-left: 15px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        .station-dot::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 7px;
+            width: 6px;
+            height: 6px;
+            background: #2ed573;
+            border-radius: 50%;
+        }
+        .station-dot:last-child {
+            margin-bottom: 0;
+            color: #fff;
+            font-weight: 600;
+        }
+        .alert-banner {
+            width: 100%;
+            max-width: 650px;
+            background: rgba(233, 69, 96, 0.15);
+            border: 1px solid #e94560;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+            display: none;
+        }
+        .marquee-text {
+            display: inline-block;
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: marqueeAnimation 15s linear infinite;
+            color: #ff6b6b;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        @keyframes marqueeAnimation {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-top">
+        <div class="brand">Istanbul Rail Route</div>
+        <div class="menu-options">
+            <a href="mainmenu.html" class="menu-btn">Dashboard</a>
+            <a href="route.html" class="menu-btn active">Calculate Route</a>
+            <a href="payment.html" class="menu-btn">Top-up Balance</a>
+            <a href="adminpanel.html" id="admin-nav" class="menu-btn admin-option hidden">Edit Lines</a>
+        </div>
+    </div>
+    <a href="index.html" class="menu-btn logout-btn">Logout</a>
+</div>
+
+<div class="main-content">
+    <div class="route-card">
+        <div id="alert-banner" class="alert-banner">
+            <div id="marquee-content" class="marquee-text"></div>
+        </div>
+        <h2>Plan Your Journey</h2>
+        <div class="balance-display">Available Balance: <strong id="current-balance">0.00</strong> ₺</div>
+
+        <div id="message-box" class="msg-box"></div>
+
+        <form id="routeForm">
+            <div class="row">
+                <div class="col form-group">
+                    <label>Start Station</label>
+                    <div class="custom-select">
+                        <input type="text" id="startInput" placeholder="Kalkış Durağı Ara..." autocomplete="off" required>
+                        <input type="hidden" id="startId" required>
+                        <div class="dropdown-list" id="startDropdown"></div>
+                    </div>
+                </div>
+                <div class="col form-group">
+                    <label>End Station</label>
+                    <div class="custom-select">
+                        <input type="text" id="endInput" placeholder="Varış Durağı Ara..." autocomplete="off" required>
+                        <input type="hidden" id="endId" required>
+                        <div class="dropdown-list" id="endDropdown"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Routing Preference</label>
+                <select id="preference">
+                    <option value="SHORTEST_TIME">Shortest Time</option>
+                    <option value="LEAST_TRANSFER">Least Transfers</option>
+                    <option value="LEAST_STOPS">Least Stops</option>
+                </select>
+            </div>
+
+            <button type="submit" class="action-btn">Calculate Route</button>
+        </form>
+
+        <div id="result-section" class="result-box hidden">
+            <div class="route-summary">
+                <div>Tahmini Toplam Ücret: <strong id="total-fare-text">0.00</strong> ₺</div>
+                <div>Tahmini Süre: <strong id="total-duration-text">0</strong> Dakika</div>
+                <div>Kullanılacak Hatlar: <span id="used-lines-text"></span></div>
+            </div>
+
+            <div id="route-timeline"></div>
+
+            <button type="button" id="payAndTravelBtn" class="action-btn pay-btn">Travel on this Route</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentUserId = null;
+    let calculatedSegments = [];
+    let allStations = [];
+
+    const username = localStorage.getItem('username');
+
+    if (!username) {
+        window.location.href = 'index.html';
+    } else {
+        fetch('/api/auth/me?username=' + username)
+            .then(response => {
+                if (!response.ok) throw new Error();
+                return response.json();
+            })
+            .then(user => {
+                currentUserId = user.id;
+                if (user.role === "ADMIN") {
+                    document.getElementById('admin-nav').classList.remove('hidden');
+                }
+                const balance = user.virtualCard && user.virtualCard.balance !== undefined ? user.virtualCard.balance : 0;
+                document.getElementById('current-balance').textContent = balance.toFixed(2);
+                loadStations();
+            })
+            .catch(() => {
+                localStorage.removeItem('username');
+                window.location.href = 'index.html';
+            });
+    }
+
+    document.querySelector('.logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('username');
+    });
+
+    function loadStations() {
+        fetch('/api/stations')
+            .then(res => res.json())
+            .then(stations => {
+                allStations = stations;
+                setupDropdown('startInput', 'startId', 'startDropdown');
+                setupDropdown('endInput', 'endId', 'endDropdown');
+            })
+            .catch(() => {});
+    }
+    function loadSystemAlerts() {
+        fetch('/api/notifications/alerts')
+            .then(res => res.json())
+            .then(alerts => {
+                const banner = document.getElementById('alert-banner');
+                const content = document.getElementById('marquee-content');
+                if (alerts && alerts.length > 0) {
+                    content.textContent = "🚨 BİLDİRİM: " + alerts.join(' | ');
+                    banner.style.display = 'block';
+                } else {
+                    banner.style.display = 'none';
+                }
+            })
+            .catch(() => {});
+    }
+
+    loadSystemAlerts();
+    setInterval(loadSystemAlerts, 10000);
+
+    function setupDropdown(inputId, hiddenId, dropdownId) {
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenId);
+        const dropdown = document.getElementById(dropdownId);
+
+        input.addEventListener('focus', () => {
+            dropdown.style.display = 'block';
+            renderList(input.value, dropdown, input, hidden);
+        });
+
+        input.addEventListener('input', (e) => {
+            renderList(e.target.value, dropdown, input, hidden);
+            hidden.value = '';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    }
+
+    function renderList(filter, dropdown, input, hidden) {
+        dropdown.innerHTML = '';
+        const filtered = allStations.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
+
+        filtered.forEach(station => {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.textContent = station.name;
+            div.addEventListener('click', () => {
+                input.value = station.name;
+                hidden.value = station.id;
+                dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(div);
+        });
+    }
+
+    document.getElementById('routeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msgBox = document.getElementById('message-box');
+        msgBox.style.display = 'none';
+        msgBox.className = 'msg-box';
+        document.getElementById('result-section').classList.add('hidden');
+
+        const startId = document.getElementById('startId').value;
+        const endId = document.getElementById('endId').value;
+        const preference = document.getElementById('preference').value;
+
+        if (!startId || !endId) {
+            msgBox.textContent = 'Lütfen geçerli istasyonları listeden seçiniz.';
+            msgBox.classList.add('error');
+            msgBox.style.display = 'block';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/routes/calculate?startId=${startId}&endId=${endId}&preference=${preference}`);
+
+            if (response.ok) {
+                const routeResult = await response.json();
+
+                if (routeResult.stations && routeResult.stations.length > 0) {
+                    calculatedSegments = routeResult.segments;
+
+                    document.getElementById('total-fare-text').textContent = routeResult.totalFare.toFixed(2);
+                    document.getElementById('total-duration-text').textContent = Math.round(routeResult.totalDuration);
+
+                    const usedLines = [...new Set(calculatedSegments.map(seg => seg.lineName))].join(', ');
+                    document.getElementById('used-lines-text').textContent = usedLines;
+
+                    const timeline = document.getElementById('route-timeline');
+                    timeline.innerHTML = '';
+
+                    let stationIndex = 0;
+                    calculatedSegments.forEach(seg => {
+                        const segStations = routeResult.stations.slice(stationIndex, stationIndex + seg.stationCount + 1);
+                        stationIndex += seg.stationCount;
+
+                        let stationsHtml = segStations.map(s => `<div class="station-dot">${s.name}</div>`).join('');
+
+                        timeline.innerHTML += `
+                            <div class="timeline-segment">
+                                <div class="segment-header">
+                                    ${seg.lineName}
+                                    <span>${seg.stationCount} Durak • ${Math.round(seg.segmentDuration)} Dk • ${seg.segmentFare.toFixed(2)} ₺</span>
+                                </div>
+                                <div class="segment-stations">
+                                    ${stationsHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    document.getElementById('result-section').classList.remove('hidden');
+                } else {
+                    msgBox.textContent = 'Bu iki istasyon arasında rota bulunamadı.';
+                    msgBox.classList.add('error');
+                    msgBox.style.display = 'block';
+                }
+            } else {
+                const errorData = await response.json();
+                if (errorData && errorData.errors) {
+                    msgBox.innerHTML = errorData.errors.join('<br>');
+                } else {
+                    msgBox.textContent = 'Rota hesaplanamadı.';
+                }
+                msgBox.classList.add('error');
+                msgBox.style.display = 'block';
+            }
+        } catch (err) {
+            msgBox.textContent = 'Sunucu bağlantı hatası.';
+            msgBox.classList.add('error');
+            msgBox.style.display = 'block';
+        }
+    });
+
+    document.getElementById('payAndTravelBtn').addEventListener('click', async () => {
+        const msgBox = document.getElementById('message-box');
+        msgBox.style.display = 'none';
+        msgBox.className = 'msg-box';
+
+        if (!currentUserId || calculatedSegments.length === 0) return;
+
+        try {
+            const response = await fetch(`/api/fare/pay-journey`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    passengerId: currentUserId,
+                    segments: calculatedSegments
+                })
+            });
+
+            if (response.ok) {
+                const updatedPassenger = await response.json();
+                const newBalance = updatedPassenger.virtualCard.balance;
+                document.getElementById('current-balance').textContent = newBalance.toFixed(2);
+
+                msgBox.textContent = 'Yolculuk başarıyla başlatıldı! Bakiye düşüldü.';
+                msgBox.classList.add('success');
+                msgBox.style.display = 'block';
+
+                document.getElementById('result-section').classList.add('hidden');
+                document.getElementById('routeForm').reset();
+            } else {
+                const errorData = await response.json();
+                if (errorData && errorData.errors) {
+                    msgBox.innerHTML = errorData.errors.join('<br>');
+                } else {
+                    msgBox.textContent = 'Ödeme işlemi başarısız. Bakiyenizi kontrol edin.';
+                }
+                msgBox.classList.add('error');
+                msgBox.style.display = 'block';
+            }
+        } catch (err) {
+            msgBox.textContent = 'Ödeme işlemi sırasında sunucu hatası oluştu.';
+            msgBox.classList.add('error');
+            msgBox.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
