@@ -46,6 +46,7 @@ public class LeastStopsRouteStrategy implements RouteCalculationStrategy {
             visited.add(currentNode);
 
             List<StationConnection> neighbors = graph.getOrDefault(currentNode, new ArrayList<>());
+
             for (StationConnection edge : neighbors) {
                 Long neighborNode = edge.getTargetStation().getId();
                 if (visited.contains(neighborNode)) continue;
@@ -62,7 +63,7 @@ public class LeastStopsRouteStrategy implements RouteCalculationStrategy {
         }
 
         if (!previousNodes.containsKey(endStationId)) {
-            throw new RuntimeException("Hedef istasyona ulaşılamıyor veya rota bulunamadı!");
+            throw new RuntimeException("Destination station is unreachable or route not found!");
         }
 
         List<Long> path = new ArrayList<>();

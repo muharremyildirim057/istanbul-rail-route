@@ -28,7 +28,7 @@ public class FareService {
     @Transactional
     public Passenger processFarePayment(Long passengerId, Line line, int stationCount) {
         Passenger passenger = userRepository.findById(passengerId)
-                .orElseThrow(() -> new IllegalArgumentException("Yolcu bulunamadı!"));
+                .orElseThrow(() -> new IllegalArgumentException("Passenger not found!"));
 
         FareStrategy fareStrategy = lineFareFactory.getFareStrategy(line.getType());
 
@@ -37,7 +37,7 @@ public class FareService {
         boolean paymentSuccess = passenger.getVirtualCard().payFare(finalFare, line.getId());
 
         if (!paymentSuccess) {
-            throw new RuntimeException("Yetersiz bakiye! Seyahat ücreti: " + finalFare + " TL. Mevcut bakiyeniz: " + passenger.getVirtualCard().getBalance() + " TL");
+            throw new RuntimeException("Insufficient balance! Journey fare: " + finalFare + " TRY. Current balance: " + passenger.getVirtualCard().getBalance() + " TRY");
         }
 
         return userRepository.save(passenger);
@@ -46,11 +46,11 @@ public class FareService {
     @Transactional
     public Passenger processJourneyPayment(Long passengerId, List<JourneySegmentDto> segments) {
         Passenger passenger = userRepository.findById(passengerId)
-                .orElseThrow(() -> new IllegalArgumentException("Yolcu bulunamadı!"));
+                .orElseThrow(() -> new IllegalArgumentException("Passenger not found!"));
 
         for (JourneySegmentDto segment : segments) {
             Line line = lineRepository.findById(segment.getLineId())
-                    .orElseThrow(() -> new IllegalArgumentException("Hat bulunamadı!"));
+                    .orElseThrow(() -> new IllegalArgumentException("Line not found!"));
 
             FareStrategy fareStrategy = lineFareFactory.getFareStrategy(line.getType());
 
@@ -59,7 +59,7 @@ public class FareService {
             boolean paymentSuccess = passenger.getVirtualCard().payFare(baseFare, line.getId());
 
             if (!paymentSuccess) {
-                throw new RuntimeException("Yetersiz bakiye! Aktarma sırasında " + line.getName() + " hattı için bakiye yetmedi.");
+                throw new RuntimeException("Insufficient balance! Not enough balance for line " + line.getName() + " during transfer.");
             }
         }
 

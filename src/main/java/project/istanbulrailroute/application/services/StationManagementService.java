@@ -20,15 +20,13 @@ public class StationManagementService implements StationSubject {
         this.stationRepository = stationRepository;
     }
 
-    // Admin tarafından çağrılan, durağın durumunu güncelleyen metod
     public Station updateStationStatus(Long id, StationStatus newStatus) {
         Station station = stationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("İstasyon bulunamadı. ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Station not found. ID: " + id));
 
         station.setStatus(newStatus);
         Station updatedStation = stationRepository.save(station);
 
-        // Durum değiştiğinde tüm sistemleri (Örn: Rota hesaplayıcıyı) haberdar et
         notifyObservers(updatedStation);
 
         return updatedStation;

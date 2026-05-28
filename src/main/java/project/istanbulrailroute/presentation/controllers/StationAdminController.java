@@ -16,7 +16,6 @@ public class StationAdminController {
         this.stationManagementService = stationManagementService;
     }
 
-    // İstasyon durumunu güncelleme Endpoint'i (Örn: PUT /api/admin/stations/1/status?newStatus=MAINTENANCE)
     @PutMapping("/{id}/status")
     public ResponseEntity<Station> updateStatus(
             @PathVariable Long id,

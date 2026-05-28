@@ -81,7 +81,7 @@ public class RouteService {
             Long toId = routeIds.get(i + 1);
 
             StationConnection conn = connectionRepository.findFirstByStartStationIdAndTargetStationId(fromId, toId)
-                    .orElseThrow(() -> new RuntimeException("Hata"));
+                    .orElseThrow(() -> new RuntimeException("Error"));
 
             Long edgeLineId = conn.getLine().getId();
             String edgeLineName = conn.getLine().getName();

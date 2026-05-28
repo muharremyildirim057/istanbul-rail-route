@@ -13,7 +13,6 @@ public class StationService {
 
     private final StationRepository stationRepository;
 
-    // Dependency Injection (Constructor Injection)
     public StationService(StationRepository stationRepository) {
         this.stationRepository = stationRepository;
     }
@@ -25,7 +24,6 @@ public class StationService {
     }
 
     public Station createStation(Station station) {
-        // İleride buraya "Aynı isimde istasyon var mı?" gibi iş kuralları (business logic) eklenebilir.
         return stationRepository.save(station);
     }
 

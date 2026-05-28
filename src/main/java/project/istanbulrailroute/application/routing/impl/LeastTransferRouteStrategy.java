@@ -67,7 +67,7 @@ public class LeastTransferRouteStrategy implements RouteCalculationStrategy {
         }
 
         if (!previousNodes.containsKey(endStationId)) {
-            throw new RuntimeException("Hedef istasyona ulaşılamıyor veya rota bulunamadı!");
+            throw new RuntimeException("Destination station is unreachable or route not found!");
         }
 
         List<Long> path = new ArrayList<>();

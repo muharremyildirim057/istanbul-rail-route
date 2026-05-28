@@ -258,7 +258,7 @@
                     <div class="balance-currency">₺</div>
                 </div>
             </div>
-            <a href="payment.html" style="text-decoration: none; color: #e94560; font-size: 13px; font-weight: 600;">+ Yükleme Yap</a>
+            <a href="payment.html" style="text-decoration: none; color: #e94560; font-size: 13px; font-weight: 600;">+ Top Up</a>
         </div>
     </div>
 
@@ -281,7 +281,6 @@
     if (!username) {
         window.location.href = 'index.html';
     } else {
-        // Kullanıcı Bilgilerini Getir
         fetch('/api/auth/me?username=' + username)
             .then(res => res.json())
             .then(user => {
@@ -292,7 +291,6 @@
                 document.getElementById('info-balance').textContent = (user.virtualCard?.balance || 0).toFixed(2);
             });
 
-        // Hat Bilgilerini Getir
         fetch('/api/lines/details')
             .then(res => res.json())
             .then(lines => {

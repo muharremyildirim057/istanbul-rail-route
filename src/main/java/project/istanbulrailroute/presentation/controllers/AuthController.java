@@ -19,15 +19,12 @@ public class AuthController {
 
     private final AuthService authService;
 
-
-    // Spring IoC Container tarafından yönetilen Singleton enjeksiyonu
     public AuthController(AuthService authService, ResourceUrlProvider resourceUrlProvider) {
         this.authService = authService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<Passenger> loginPassenger(@RequestBody LoginRequest request) {
-        // Tek satır! Hata olursa otomatik olarak 401 ve List<String> fırlayacak.
         Passenger passenger = authService.login(request.getUsername(), request.getPassword());
         return ResponseEntity.ok().body(passenger);
     }

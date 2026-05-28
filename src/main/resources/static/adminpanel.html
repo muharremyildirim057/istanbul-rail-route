@@ -84,7 +84,7 @@
             </form>
             <div class="search-bar">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchStations" placeholder="İstasyon Ara..." oninput="renderStations(this.value)">
+                <input type="text" id="searchStations" placeholder="Search station..." oninput="renderStations(this.value)">
             </div>
             <div class="data-table-container">
                 <table>
@@ -119,7 +119,7 @@
             </form>
             <div class="search-bar">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchLines" placeholder="Hat Ara..." oninput="renderLines(this.value)">
+                <input type="text" id="searchLines" placeholder="Search line..." oninput="renderLines(this.value)">
             </div>
             <div class="data-table-container">
                 <table>
@@ -158,7 +158,7 @@
             </form>
             <div class="search-bar">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchConnections" placeholder="Bağlantı Ara (Durak veya Hat)..." oninput="renderConnections(this.value)">
+                <input type="text" id="searchConnections" placeholder="Search connection (Station or Line)..." oninput="renderConnections(this.value)">
             </div>
             <div class="data-table-container">
                 <table>
@@ -303,30 +303,30 @@
     }
 
     async function deleteStation(id) {
-        if (!confirm('Bu istasyonu silmek istediğinize emin misiniz? (Bağlı hatlar varsa hata verebilir)')) return;
+        if (!confirm('Are you sure you want to delete this station? (May cause errors if lines are connected)')) return;
         const res = await fetch(`/api/stations/${id}`, { method: 'DELETE' });
-        if (res.ok) { showMessage('İstasyon silindi.', true); loadAllData(); }
-        else { showMessage('Hata: Önce bu istasyona bağlı "Connection"ları silmelisiniz.', false); }
+        if (res.ok) { showMessage('Station deleted.', true); loadAllData(); }
+        else { showMessage('Error: You must first delete the Connections linked to this station.', false); }
     }
 
     async function deleteLine(id) {
-        if (!confirm('Bu hattı silmek istediğinize emin misiniz? (Bağlı duraklar varsa hata verebilir)')) return;
+        if (!confirm('Are you sure you want to delete this line? (May cause errors if stations are connected)')) return;
         const res = await fetch(`/api/lines/${id}`, { method: 'DELETE' });
-        if (res.ok) { showMessage('Hat silindi.', true); loadAllData(); }
-        else { showMessage('Hata: Önce bu hatta bağlı "Connection"ları silmelisiniz.', false); }
+        if (res.ok) { showMessage('Line deleted.', true); loadAllData(); }
+        else { showMessage('Error: You must first delete the Connections linked to this line.', false); }
     }
 
     async function deleteConnection(id) {
-        if (!confirm('Bu bağlantıyı silmek istediğinize emin misiniz?')) return;
+        if (!confirm('Are you sure you want to delete this connection?')) return;
         const res = await fetch(`/api/stations/connections/${id}`, { method: 'DELETE' });
-        if (res.ok) { showMessage('Bağlantı silindi.', true); loadAllData(); }
-        else { showMessage('Bağlantı silinirken hata oluştu.', false); }
+        if (res.ok) { showMessage('Connection deleted.', true); loadAllData(); }
+        else { showMessage('Error occurred while deleting connection.', false); }
     }
 
     async function updateStationStatus(id, newStatus) {
         const res = await fetch(`/api/admin/stations/${id}/status?newStatus=${newStatus}`, { method: 'PUT' });
-        if (res.ok) { showMessage('Durum güncellendi.', true); loadAllData(); }
-        else { showMessage('Durum güncellenemedi.', false); }
+        if (res.ok) { showMessage('Status updated.', true); loadAllData(); }
+        else { showMessage('Failed to update status.', false); }
     }
 
     document.getElementById('stationForm').addEventListener('submit', async (e) => {

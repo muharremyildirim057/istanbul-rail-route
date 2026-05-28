@@ -14,16 +14,14 @@ public class StationConnectionController {
 
     private final StationConnectionService connectionService;
 
-    // Sadece Service sınıfını enjekte ediyoruz
     public StationConnectionController(StationConnectionService connectionService) {
         this.connectionService = connectionService;
     }
 
     @PostMapping
     public ResponseEntity<String> createConnection(@RequestBody ConnectionRequestDto request) {
-        // Tüm karmaşık iş kuralları ve veritabanı işlemleri service'e devredildi
         connectionService.createBidirectionalConnection(request);
-        return ResponseEntity.ok("İstasyonlar çift yönlü olarak başarıyla bağlandı!");
+        return ResponseEntity.ok("Stations have been successfully connected bidirectionally!");
     }
 
     @GetMapping

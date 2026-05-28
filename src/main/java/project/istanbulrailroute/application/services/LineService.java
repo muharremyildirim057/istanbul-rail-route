@@ -53,7 +53,6 @@ public class LineService {
         List<Line> lines = lineRepository.findAll();
 
         return lines.stream().map(line -> {
-            // İstasyonları bağlantılardan çekip benzersiz ve sıralı hale getirme (Business Logic)
             List<String> stations = line.getConnections().stream()
                     .flatMap(conn -> java.util.stream.Stream.of(conn.getStartStation().getName(), conn.getTargetStation().getName()))
                     .distinct()
@@ -70,6 +69,6 @@ public class LineService {
 
     public Line getLineById(Long id) {
         return lineRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Hatalı hat seçimi! Hat bulunamadı."));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid line selection! Line not found."));
     }
 }

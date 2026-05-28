@@ -15,7 +15,6 @@ public class StationController {
 
     private final StationService stationService;
 
-    // Artık Repository değil, Service enjekte ediyoruz
     public StationController(StationService stationService) {
         this.stationService = stationService;
     }

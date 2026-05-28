@@ -16,7 +16,6 @@ public class LineController {
 
     private final LineService lineService;
 
-    // Sadece LineService enjekte ediliyor
     public LineController(LineService lineService) {
         this.lineService = lineService;
     }

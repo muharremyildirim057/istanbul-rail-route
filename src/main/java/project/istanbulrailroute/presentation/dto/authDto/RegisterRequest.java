@@ -7,21 +7,21 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
-    @NotBlank(message = "Kullanıcı Adı Boş Bırakılamaz.")
-    @Size(min = 3, max = 20 , message = "Kullanıcı adı 3 ile 20 karakter arasında olmalıdır.")
+    @NotBlank(message = "Username cannot be empty.")
+    @Size(min = 3, max = 20 , message = "Username must be between 3 and 20 characters.")
     private String username;
 
-    @NotBlank(message = "Şifre boş bırakılamaz.")
-    @Size(min = 6, max = 20, message = "Şifre 6 ile 20 karakter arasında olmalıdır.")
+    @NotBlank(message = "Password cannot be empty.")
+    @Size(min = 6, max = 20, message = "Password must be between 6 and 20 characters.")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).*$",
-            message = "Şifre en az 1 sayı ve 1 özel karakter içermelidir.")
+            message = "Password must contain at least 1 number and 1 special character.")
     private String password;
 
-    @NotBlank(message = "Ad alanı boş bırakılamaz.")
-    @Size(min = 3, max = 20, message = "Ad 3 ile 20 karakter arasında olmalıdır.")
+    @NotBlank(message = "First name cannot be empty.")
+    @Size(min = 3, max = 20, message = "First name must be between 3 and 20 characters.")
     private String firstName;
 
-    @NotBlank(message = "Soyad alanı boş bırakılamaz.")
-    @Size(min = 3, max = 20, message = "Soyad 3 ile 20 karakter arasında olmalıdır.")
+    @NotBlank(message = "Last name cannot be empty.")
+    @Size(min = 3, max = 20, message = "Last name must be between 3 and 20 characters.")
     private String lastName;
 }

@@ -18,24 +18,19 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
 
     @Override
     public List<Long> calculateRoute(Long startStationId, Long endStationId) {
-        // 1. Tüm ağı veritabanından RAM'e çekiyoruz (Bu işlem inanılmaz hızlıdır)
         List<StationConnection> allConnections = connectionRepository.findAll();
 
-        // 2. Graf (Ağ) Haritasını Oluşturma (Hangi duraktan nerelere gidilebilir?)
         Map<Long, List<StationConnection>> graph = new HashMap<>();
         for (StationConnection conn : allConnections) {
             graph.computeIfAbsent(conn.getStartStation().getId(), k -> new ArrayList<>()).add(conn);
         }
 
-        // Dijkstra Değişkenleri
         Map<Long, Double> distances = new HashMap<>();
         Map<Long, Long> previousNodes = new HashMap<>();
         Set<Long> visited = new HashSet<>();
 
-        // Priority Queue: Her zaman en kısa süreli (en avantajlı) yolu önce seçer
         PriorityQueue<NodeDistance> pq = new PriorityQueue<>(Comparator.comparingDouble(nd -> nd.distance));
 
-        // Başlangıç durağını ayarla
         distances.put(startStationId, 0.0);
         pq.add(new NodeDistance(startStationId, 0.0, null));
 
@@ -43,7 +38,6 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
             NodeDistance current = pq.poll();
             Long currentNode = current.nodeId;
 
-            // Hedefe en kısa yoldan ulaştıysak aramayı bitir!
             if (currentNode.equals(endStationId)) {
                 break;
             }
@@ -51,23 +45,20 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
             if (visited.contains(currentNode)) continue;
             visited.add(currentNode);
 
-            // Komşu durakları gez
             List<StationConnection> neighbors = graph.getOrDefault(currentNode, new ArrayList<>());
+
             for (StationConnection edge : neighbors) {
                 Long neighborNode = edge.getTargetStation().getId();
                 if (visited.contains(neighborNode)) continue;
 
-                // Ağırlık = Normal Seyahat Süresi
                 double weight = edge.getDuration();
 
-                // AKTARMA CEZASI: Eğer geldiğimiz hat ile gideceğimiz hat farklıysa 5 dk ekle
                 if (current.lineId != null && !current.lineId.equals(edge.getLine().getId())) {
                     weight += 5.0;
                 }
 
                 double newDist = distances.getOrDefault(currentNode, 0.0) + weight;
 
-                // Eğer bulduğumuz bu yeni yol, öncekilerden daha kısaysa rotayı güncelle
                 if (newDist < distances.getOrDefault(neighborNode, Double.MAX_VALUE)) {
                     distances.put(neighborNode, newDist);
                     previousNodes.put(neighborNode, currentNode);
@@ -77,17 +68,16 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
         }
 
         if (!previousNodes.containsKey(endStationId)) {
-            throw new RuntimeException("Hedef istasyona ulaşılamıyor veya rota bulunamadı!");
+            throw new RuntimeException("Destination station is unreachable or route not found!");
         }
 
-        // 3. Bulunan en kısa rotayı sondan başa doğru listeye çevir
         List<Long> path = new ArrayList<>();
         Long curr = endStationId;
         while (curr != null) {
             path.add(curr);
             curr = previousNodes.get(curr);
         }
-        Collections.reverse(path); // Rotayı baştan sona doğru düzelt
+        Collections.reverse(path);
 
         return path;
     }
@@ -97,7 +87,6 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
         return "SHORTEST_TIME";
     }
 
-    // Algoritmanın kuyrukta tutacağı yardımcı iç sınıf
     private static class NodeDistance {
         Long nodeId;
         double distance;

@@ -17,31 +17,28 @@ public class WalletService {
     @Transactional
     public Passenger topUpBalance(Long passengerId, String creditCardNumber, double amount){
         if(amount < 30){
-            throw new InvalidCardException("Yükleme başarısız! Tek seferde en az 30 TL yükleyebilirsiniz.");
+            throw new InvalidCardException("Top-up failed! You must top up at least 30 TRY at a time.");
         }if (amount > 3500) {
-            throw new InvalidCardException("Yükleme başarısız! Tek seferde en fazla 3500 TL yükleyebilirsiniz.");
+            throw new InvalidCardException("Top-up failed! You can top up a maximum of 3500 TRY at a time.");
         }
 
         if (!validateLuhn(creditCardNumber)) {
-            throw new InvalidCardException("Geçersiz kredi kartı numarası! [Luhn Doğrulaması Başarısız]");
+            throw new InvalidCardException("Invalid credit card number! [Luhn Validation Failed]");
         }
-        // 3. Yolcuyu veritabanından bulma
-        Passenger passenger = userRepository.findById(passengerId)
-                .orElseThrow(() -> new IllegalArgumentException("Yolcu bulunamadı!"));
 
-        // 4. Maksimum Toplam Bakiye Kontrolü (Toplam bakiye 5000 TL'yi aşamaz)
+        Passenger passenger = userRepository.findById(passengerId)
+                .orElseThrow(() -> new IllegalArgumentException("Passenger not found!"));
+
         double currentBalance = passenger.getVirtualCard().getBalance();
         if (currentBalance + amount > 5000) {
-            throw new InvalidCardException("Yükleme başarısız! Kart toplam bakiyesi 5000 TL sınırını aşamaz. Mevcut bakiyeniz: " + currentBalance + " TL");
+            throw new InvalidCardException("Top-up failed! Card total balance cannot exceed 5000 TRY limit. Current balance: " + currentBalance + " TRY");
         }
 
-        // 5. Her şey yolundaysa domain modelimizdeki iş kuralını tetikleme (Para yükleme)
         passenger.getVirtualCard().topUp(amount);
 
-        System.out.println("[SIMÜLASYON] Limitler onaylandı. Sanal karta " + amount + " TL yüklendi.");
+        System.out.println("[SIMULATION] Limits approved. " + amount + " TRY loaded to the virtual card.");
         return userRepository.save(passenger);
     }
-
 
     private boolean validateLuhn(String cardNumber) {
         if (cardNumber == null) return false;
@@ -65,5 +62,4 @@ public class WalletService {
         }
         return (sum % 10 == 0);
     }
-
 }

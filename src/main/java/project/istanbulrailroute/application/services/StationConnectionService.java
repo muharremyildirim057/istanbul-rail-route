@@ -29,19 +29,17 @@ public class StationConnectionService {
         this.lineRepository = lineRepository;
     }
 
-    // @Transactional sayesinde işlemlerden biri patlarsa diğeri de geri alınır!
     @Transactional
     public void createBidirectionalConnection(ConnectionRequestDto request) {
         Station start = stationRepository.findById(request.getStartStationId())
-                .orElseThrow(() -> new RuntimeException("Başlangıç istasyonu bulunamadı."));
+                .orElseThrow(() -> new RuntimeException("Start station not found."));
 
         Station target = stationRepository.findById(request.getTargetStationId())
-                .orElseThrow(() -> new RuntimeException("Hedef istasyon bulunamadı."));
+                .orElseThrow(() -> new RuntimeException("Target station not found."));
 
         Line line = lineRepository.findById(request.getLineId())
-                .orElseThrow(() -> new RuntimeException("Hat bulunamadı."));
+                .orElseThrow(() -> new RuntimeException("Line not found."));
 
-        // 1. İleri Yön Bağlantısı (A -> B)
         StationConnection forwardConnection = new StationConnection();
         forwardConnection.setStartStation(start);
         forwardConnection.setTargetStation(target);
@@ -49,7 +47,6 @@ public class StationConnectionService {
         forwardConnection.setDuration(request.getDuration());
         connectionRepository.save(forwardConnection);
 
-        // 2. Geri Yön Bağlantısı (B -> A) - Çift Yönlü Algoritma İçin Şart
         StationConnection backwardConnection = new StationConnection();
         backwardConnection.setStartStation(target);
         backwardConnection.setTargetStation(start);

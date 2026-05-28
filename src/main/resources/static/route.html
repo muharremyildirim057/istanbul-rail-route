@@ -363,7 +363,7 @@
                 <div class="col form-group">
                     <label>Start Station</label>
                     <div class="custom-select">
-                        <input type="text" id="startInput" placeholder="Kalkış Durağı Ara..." autocomplete="off" required>
+                        <input type="text" id="startInput" placeholder="Search Departure Station..." autocomplete="off" required>
                         <input type="hidden" id="startId" required>
                         <div class="dropdown-list" id="startDropdown"></div>
                     </div>
@@ -371,7 +371,7 @@
                 <div class="col form-group">
                     <label>End Station</label>
                     <div class="custom-select">
-                        <input type="text" id="endInput" placeholder="Varış Durağı Ara..." autocomplete="off" required>
+                        <input type="text" id="endInput" placeholder="Search Arrival Station..." autocomplete="off" required>
                         <input type="hidden" id="endId" required>
                         <div class="dropdown-list" id="endDropdown"></div>
                     </div>
@@ -392,9 +392,9 @@
 
         <div id="result-section" class="result-box hidden">
             <div class="route-summary">
-                <div>Tahmini Toplam Ücret: <strong id="total-fare-text">0.00</strong> ₺</div>
-                <div>Tahmini Süre: <strong id="total-duration-text">0</strong> Dakika</div>
-                <div>Kullanılacak Hatlar: <span id="used-lines-text"></span></div>
+                <div>Estimated Total Fare: <strong id="total-fare-text">0.00</strong> ₺</div>
+                <div>Estimated Duration: <strong id="total-duration-text">0</strong> Minutes</div>
+                <div>Lines to be Used: <span id="used-lines-text"></span></div>
             </div>
 
             <div id="route-timeline"></div>
@@ -448,6 +448,7 @@
             })
             .catch(() => {});
     }
+
     function loadSystemAlerts() {
         fetch('/api/notifications/alerts')
             .then(res => res.json())
@@ -455,7 +456,7 @@
                 const banner = document.getElementById('alert-banner');
                 const content = document.getElementById('marquee-content');
                 if (alerts && alerts.length > 0) {
-                    content.textContent = "🚨 BİLDİRİM: " + alerts.join(' | ');
+                    content.textContent = "🚨 NOTIFICATION: " + alerts.join(' | ');
                     banner.style.display = 'block';
                 } else {
                     banner.style.display = 'none';
@@ -518,7 +519,7 @@
         const preference = document.getElementById('preference').value;
 
         if (!startId || !endId) {
-            msgBox.textContent = 'Lütfen geçerli istasyonları listeden seçiniz.';
+            msgBox.textContent = 'Please select valid stations from the list.';
             msgBox.classList.add('error');
             msgBox.style.display = 'block';
             return;
@@ -553,7 +554,7 @@
                             <div class="timeline-segment">
                                 <div class="segment-header">
                                     ${seg.lineName}
-                                    <span>${seg.stationCount} Durak • ${Math.round(seg.segmentDuration)} Dk • ${seg.segmentFare.toFixed(2)} ₺</span>
+                                    <span>${seg.stationCount} Stops • ${Math.round(seg.segmentDuration)} Min • ${seg.segmentFare.toFixed(2)} ₺</span>
                                 </div>
                                 <div class="segment-stations">
                                     ${stationsHtml}
@@ -564,7 +565,7 @@
 
                     document.getElementById('result-section').classList.remove('hidden');
                 } else {
-                    msgBox.textContent = 'Bu iki istasyon arasında rota bulunamadı.';
+                    msgBox.textContent = 'No route found between these two stations.';
                     msgBox.classList.add('error');
                     msgBox.style.display = 'block';
                 }
@@ -573,13 +574,13 @@
                 if (errorData && errorData.errors) {
                     msgBox.innerHTML = errorData.errors.join('<br>');
                 } else {
-                    msgBox.textContent = 'Rota hesaplanamadı.';
+                    msgBox.textContent = 'Route could not be calculated.';
                 }
                 msgBox.classList.add('error');
                 msgBox.style.display = 'block';
             }
         } catch (err) {
-            msgBox.textContent = 'Sunucu bağlantı hatası.';
+            msgBox.textContent = 'Server connection error.';
             msgBox.classList.add('error');
             msgBox.style.display = 'block';
         }
@@ -607,7 +608,7 @@
                 const newBalance = updatedPassenger.virtualCard.balance;
                 document.getElementById('current-balance').textContent = newBalance.toFixed(2);
 
-                msgBox.textContent = 'Yolculuk başarıyla başlatıldı! Bakiye düşüldü.';
+                msgBox.textContent = 'Journey started successfully! Balance deducted.';
                 msgBox.classList.add('success');
                 msgBox.style.display = 'block';
 
@@ -618,13 +619,13 @@
                 if (errorData && errorData.errors) {
                     msgBox.innerHTML = errorData.errors.join('<br>');
                 } else {
-                    msgBox.textContent = 'Ödeme işlemi başarısız. Bakiyenizi kontrol edin.';
+                    msgBox.textContent = 'Payment failed. Please check your balance.';
                 }
                 msgBox.classList.add('error');
                 msgBox.style.display = 'block';
             }
         } catch (err) {
-            msgBox.textContent = 'Ödeme işlemi sırasında sunucu hatası oluştu.';
+            msgBox.textContent = 'A server error occurred during payment.';
             msgBox.classList.add('error');
             msgBox.style.display = 'block';
         }
