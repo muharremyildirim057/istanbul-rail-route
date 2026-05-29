@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class PayJourneyRequest {
     private Long passengerId;
-    private List<JourneySegmentDto> segments;
+    private double totalFare;
 }

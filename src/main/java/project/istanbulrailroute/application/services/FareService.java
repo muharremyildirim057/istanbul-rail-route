@@ -26,41 +26,15 @@ public class FareService {
     }
 
     @Transactional
-    public Passenger processFarePayment(Long passengerId, Line line, int stationCount) {
+    public Passenger processJourneyPayment(Long passengerId, double totalFare) {
         Passenger passenger = userRepository.findById(passengerId)
                 .orElseThrow(() -> new IllegalArgumentException("Passenger not found!"));
 
-        FareStrategy fareStrategy = lineFareFactory.getFareStrategy(line.getType());
-
-        double finalFare = fareStrategy.calculateFare(stationCount);
-
-        boolean paymentSuccess = passenger.getVirtualCard().payFare(finalFare, line.getId());
+        // Hesaplamalar zaten yapıldığı için direkt net tutarı düşüyoruz
+        boolean paymentSuccess = passenger.getVirtualCard().payDirect(totalFare);
 
         if (!paymentSuccess) {
-            throw new RuntimeException("Insufficient balance! Journey fare: " + finalFare + " TRY. Current balance: " + passenger.getVirtualCard().getBalance() + " TRY");
-        }
-
-        return userRepository.save(passenger);
-    }
-
-    @Transactional
-    public Passenger processJourneyPayment(Long passengerId, List<JourneySegmentDto> segments) {
-        Passenger passenger = userRepository.findById(passengerId)
-                .orElseThrow(() -> new IllegalArgumentException("Passenger not found!"));
-
-        for (JourneySegmentDto segment : segments) {
-            Line line = lineRepository.findById(segment.getLineId())
-                    .orElseThrow(() -> new IllegalArgumentException("Line not found!"));
-
-            FareStrategy fareStrategy = lineFareFactory.getFareStrategy(line.getType());
-
-            double baseFare = fareStrategy.calculateFare(segment.getStationCount());
-
-            boolean paymentSuccess = passenger.getVirtualCard().payFare(baseFare, line.getId());
-
-            if (!paymentSuccess) {
-                throw new RuntimeException("Insufficient balance! Not enough balance for line " + line.getName() + " during transfer.");
-            }
+            throw new RuntimeException("Insufficient balance! Total journey fare: " + totalFare + " TRY.");
         }
 
         return userRepository.save(passenger);

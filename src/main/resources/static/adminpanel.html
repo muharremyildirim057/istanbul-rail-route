@@ -303,24 +303,32 @@
     }
 
     function renderStations(filterText) {
-            const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
-            const filtered = globalStations.filter(s => s.name.toLocaleLowerCase('tr-TR').includes(searchStr) || s.id.toString().includes(searchStr));
-            const limited = filtered.slice(0, RENDER_LIMIT);
+        const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
+        const filtered = globalStations.filter(s => s.name.toLocaleLowerCase('tr-TR').includes(searchStr) || s.id.toString().includes(searchStr));
+        const limited = filtered.slice(0, RENDER_LIMIT);
 
-            document.getElementById('stationsTableBody').innerHTML = limited.map(s => {
-                // DÜZELTİLEN KISIM: Her bir status için ayrı kontrol yapıyoruz
-                const isMaintenance = s.status === 'MAINTENANCE';
-                const isClosed = s.status === 'CLOSED';
-                const isActive = !isMaintenance && !isClosed; // ACTIVE veya null ise
+        document.getElementById('stationsTableBody').innerHTML = limited.map(s => {
+
+            // Getting the current status, defaulting to OPERATIONAL
+            const status = s.status || 'OPERATIONAL';
+
+            // Statechart Diagram States
+            const isUnderConstruction = status === 'UNDER_CONSTRUCTION';
+            const isOperational = status === 'OPERATIONAL' || status === 'ACTIVE'; // ACTIVE is kept for backwards compatibility with old DB records
+            const isMaintenance = status === 'MAINTENANCE';
+            const isDisrupted = status === 'DISRUPTED';
+            const isDecommissioned = status === 'DECOMMISSIONED';
 
             return `<tr>
                 <td>${s.id}</td>
                 <td>${s.name}</td>
                 <td>
                     <select class="status-select" onchange="updateStationStatus(${s.id}, this.value)">
-                        <option value="ACTIVE" ${isActive ? 'selected' : ''}>ACTIVE</option>
+                        <option value="UNDER_CONSTRUCTION" ${isUnderConstruction ? 'selected' : ''}>UNDER CONSTRUCTION</option>
+                        <option value="OPERATIONAL" ${isOperational ? 'selected' : ''}>OPERATIONAL</option>
                         <option value="MAINTENANCE" ${isMaintenance ? 'selected' : ''}>MAINTENANCE</option>
-                        <option value="CLOSED" ${isClosed ? 'selected' : ''}>CLOSED</option>
+                        <option value="DISRUPTED" ${isDisrupted ? 'selected' : ''}>DISRUPTED</option>
+                        <option value="DECOMMISSIONED" ${isDecommissioned ? 'selected' : ''}>DECOMMISSIONED</option>
                     </select>
                 </td>
                 <td><button class="delete-btn" onclick="deleteStation(${s.id})">Delete</button></td>
@@ -418,7 +426,8 @@
                 'Content-Type': 'application/json',
                 'X-Username': localStorage.getItem('username')
             },
-            body: JSON.stringify({ name: document.getElementById('stationName').value, status: 'ACTIVE' })
+            // CHANGED: Default status is now OPERATIONAL instead of ACTIVE
+            body: JSON.stringify({ name: document.getElementById('stationName').value, status: 'OPERATIONAL' })
         });
         if (res.ok) { showMessage('Station added successfully!', true); document.getElementById('stationForm').reset(); loadAllData(); }
         else showMessage('Failed to add station.', false);

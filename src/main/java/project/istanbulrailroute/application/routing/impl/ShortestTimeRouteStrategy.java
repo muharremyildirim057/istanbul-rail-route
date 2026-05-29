@@ -10,12 +10,12 @@ import project.istanbulrailroute.presentation.dto.routeDto.RouteResponseDto;
 
 import java.util.*;
 
-@Service("leastTransferStrategy")
-public class LeastTransferRouteStrategy extends project.istanbulrailroute.application.routing.impl.AbstractRouteStrategy {
+@Service("shortestTimeStrategy")
+public class ShortestTimeRouteStrategy extends project.istanbulrailroute.application.routing.impl.AbstractRouteStrategy {
 
-    public LeastTransferRouteStrategy(StationConnectionRepository connectionRepository,
-                                      StationRepository stationRepository,
-                                      LineFareFactory lineFareFactory) {
+    public ShortestTimeRouteStrategy(StationConnectionRepository connectionRepository,
+                                     StationRepository stationRepository,
+                                     LineFareFactory lineFareFactory) {
         super(connectionRepository, stationRepository, lineFareFactory);
     }
 
@@ -27,26 +27,27 @@ public class LeastTransferRouteStrategy extends project.istanbulrailroute.applic
             graph.computeIfAbsent(conn.getStartStation().getId(), k -> new ArrayList<>()).add(conn);
         }
 
-        Map<String, RouteCost> bestCosts = new HashMap<>();
+        Map<String, Double> distances = new HashMap<>();
         Map<String, String> previousStates = new HashMap<>();
         Set<String> visited = new HashSet<>();
 
-        PriorityQueue<NodeState> pq = new PriorityQueue<>(Comparator.comparing(ns -> ns.cost));
+        PriorityQueue<NodeDistance> pq = new PriorityQueue<>(Comparator.comparingDouble(nd -> nd.distance));
 
         String startState = startStationId + "_null";
-        RouteCost startCost = new RouteCost(0, 0);
-        bestCosts.put(startState, startCost);
-        pq.add(new NodeState(startStationId, null, startCost));
+        distances.put(startState, 0.0);
+        pq.add(new NodeDistance(startStationId, 0.0, null));
 
         String bestEndState = null;
+        double exactDijkstraTime = 0.0; // DIJKSTRA'NIN BULDUĞU KESİN SÜRE
 
         while (!pq.isEmpty()) {
-            NodeState current = pq.poll();
+            NodeDistance current = pq.poll();
             Long currentNode = current.nodeId;
             String currentState = currentNode + "_" + current.lineId;
 
             if (currentNode.equals(endStationId)) {
                 bestEndState = currentState;
+                exactDijkstraTime = current.distance;
                 break;
             }
 
@@ -76,19 +77,16 @@ public class LeastTransferRouteStrategy extends project.istanbulrailroute.applic
                 String neighborState = neighborNode + "_" + edgeLineId;
                 if (visited.contains(neighborState)) continue;
 
-                int newTransfers = current.cost.transfers;
+                double weight = edge.getDuration();
                 if (current.lineId != null && !current.lineId.equals(edgeLineId)) {
-                    newTransfers++;
+                    weight += 5.0; // Aktarma bekleme süresi
                 }
-                int newStops = current.cost.stops + 1;
 
-                RouteCost newCost = new RouteCost(newTransfers, newStops);
-                RouteCost existingCost = bestCosts.get(neighborState);
-
-                if (existingCost == null || newCost.compareTo(existingCost) < 0) {
-                    bestCosts.put(neighborState, newCost);
+                double newDist = current.distance + weight;
+                if (newDist < distances.getOrDefault(neighborState, Double.MAX_VALUE)) {
+                    distances.put(neighborState, newDist);
                     previousStates.put(neighborState, currentState);
-                    pq.add(new NodeState(neighborNode, edgeLineId, newCost));
+                    pq.add(new NodeDistance(neighborNode, newDist, edgeLineId));
                 }
             }
         }
@@ -105,30 +103,19 @@ public class LeastTransferRouteStrategy extends project.istanbulrailroute.applic
         }
         Collections.reverse(path);
 
-        // DOĞRUDAN BASE SINIF ÜZERİNDEN STANDART DTO'YU DÖN (Müdahaleye gerek yok)
-        return super.buildResponseDto(path);
+        // KUSURSUZ ZAMAN ENJEKSİYONU
+        RouteResponseDto finalResponse = super.buildResponseDto(path);
+        finalResponse.setTotalDuration(exactDijkstraTime);
+        return finalResponse;
     }
 
     @Override
-    public String getStrategyName() { return "LEAST_TRANSFER"; }
+    public String getStrategyName() { return "SHORTEST_TIME"; }
 
-    private static class RouteCost implements Comparable<RouteCost> {
-        int transfers; int stops;
-        RouteCost(int transfers, int stops) { this.transfers = transfers; this.stops = stops; }
-
-        @Override
-        public int compareTo(RouteCost other) {
-            if (this.transfers != other.transfers) {
-                return Integer.compare(this.transfers, other.transfers);
-            }
-            return Integer.compare(this.stops, other.stops);
-        }
-    }
-
-    private static class NodeState {
-        Long nodeId; Long lineId; RouteCost cost;
-        NodeState(Long nodeId, Long lineId, RouteCost cost) {
-            this.nodeId = nodeId; this.lineId = lineId; this.cost = cost;
+    private static class NodeDistance {
+        Long nodeId; double distance; Long lineId;
+        NodeDistance(Long nodeId, double distance, Long lineId) {
+            this.nodeId = nodeId; this.distance = distance; this.lineId = lineId;
         }
     }
 }

@@ -25,7 +25,7 @@ public class Station {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StationStatus status = StationStatus.ACTIVE;   // "Operational", "OutOfService", "Maintenance" vb.
+    private StationStatus status = StationStatus.OPERATIONAL;   // "Operational", "OutOfService", "Maintenance" vb.
 
     @OneToMany(mappedBy = "startStation", cascade = CascadeType.ALL)
     @ToString.Exclude

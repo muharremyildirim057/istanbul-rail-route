@@ -408,6 +408,7 @@
     let currentUserId = null;
     let calculatedSegments = [];
     let allStations = [];
+    let calculatedTotalFare = 0.0;
 
     const username = localStorage.getItem('username');
 
@@ -533,6 +534,7 @@
 
                 if (routeResult.stations && routeResult.stations.length > 0) {
                     calculatedSegments = routeResult.segments;
+                    calculatedTotalFare = routeResult.totalFare;
 
                     document.getElementById('total-fare-text').textContent = routeResult.totalFare.toFixed(2);
                     document.getElementById('total-duration-text').textContent = Math.round(routeResult.totalDuration);
@@ -599,7 +601,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     passengerId: currentUserId,
-                    segments: calculatedSegments
+                    totalFare: calculatedTotalFare
                 })
             });
 

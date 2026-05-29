@@ -13,31 +13,19 @@ import project.istanbulrailroute.presentation.dto.paymentDto.PayJourneyRequest;
 public class FareController {
 
     private final FareService fareService;
-    private final LineService lineService;
 
     public FareController(FareService fareService, LineService lineService) {
         this.fareService = fareService;
-        this.lineService = lineService;
+
     }
 
-    @PostMapping("/pay")
-    public ResponseEntity<Passenger> processPayment(
-            @RequestParam Long passengerId,
-            @RequestParam Long lineId,
-            @RequestParam int stationCount) {
-
-        Line line = lineService.getLineById(lineId);
-
-        Passenger updatedPassenger = fareService.processFarePayment(passengerId, line, stationCount);
-
-        return ResponseEntity.ok(updatedPassenger);
-    }
 
     @PostMapping("/pay-journey")
     public ResponseEntity<Passenger> processJourneyPayment(@RequestBody PayJourneyRequest request) {
+        // Artık segments yerine totalFare gönderiyoruz
         Passenger updatedPassenger = fareService.processJourneyPayment(
                 request.getPassengerId(),
-                request.getSegments()
+                request.getTotalFare()
         );
         return ResponseEntity.ok(updatedPassenger);
     }
