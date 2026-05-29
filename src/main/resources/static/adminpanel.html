@@ -303,21 +303,24 @@
     }
 
     function renderStations(filterText) {
-        const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
-        const filtered = globalStations.filter(s => s.name.toLocaleLowerCase('tr-TR').includes(searchStr) || s.id.toString().includes(searchStr));
-        const limited = filtered.slice(0, RENDER_LIMIT);
+            const searchStr = (filterText || '').toLocaleLowerCase('tr-TR');
+            const filtered = globalStations.filter(s => s.name.toLocaleLowerCase('tr-TR').includes(searchStr) || s.id.toString().includes(searchStr));
+            const limited = filtered.slice(0, RENDER_LIMIT);
 
-        document.getElementById('stationsTableBody').innerHTML = limited.map(s => {
-            const isActive = s.status === 'ACTIVE' || !s.status;
+            document.getElementById('stationsTableBody').innerHTML = limited.map(s => {
+                // DÜZELTİLEN KISIM: Her bir status için ayrı kontrol yapıyoruz
+                const isMaintenance = s.status === 'MAINTENANCE';
+                const isClosed = s.status === 'CLOSED';
+                const isActive = !isMaintenance && !isClosed; // ACTIVE veya null ise
+
             return `<tr>
                 <td>${s.id}</td>
                 <td>${s.name}</td>
                 <td>
                     <select class="status-select" onchange="updateStationStatus(${s.id}, this.value)">
                         <option value="ACTIVE" ${isActive ? 'selected' : ''}>ACTIVE</option>
-                        <option value="MAINTENANCE" ${!isActive ? 'selected' : ''}>MAINTENANCE</option>
-                          <option value="CLOSED" ${!isActive ? 'selected' : ''}>CLOSED</option>
-
+                        <option value="MAINTENANCE" ${isMaintenance ? 'selected' : ''}>MAINTENANCE</option>
+                        <option value="CLOSED" ${isClosed ? 'selected' : ''}>CLOSED</option>
                     </select>
                 </td>
                 <td><button class="delete-btn" onclick="deleteStation(${s.id})">Delete</button></td>

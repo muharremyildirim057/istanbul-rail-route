@@ -40,7 +40,11 @@ public class NotificationService implements StationObserver {
         if (station.getStatus() == StationStatus.MAINTENANCE) {
             maintenanceAlerts.put(station.getId(), station.getName() + " station is temporarily closed due to maintenance.");
             System.out.println("NOTIFICATION: " + station.getName() + " is under maintenance.");
-        } else {
+        }else if(station.getStatus() == StationStatus.CLOSED){
+            maintenanceAlerts.put(station.getId(), station.getName() + " station is temporarily closed.");
+            System.out.println("NOTIFICATION: " + station.getName() + " is closed.");
+        }
+        else {
             maintenanceAlerts.remove(station.getId());
             System.out.println("NOTIFICATION: " + station.getName() + " is active again.");
         }

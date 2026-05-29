@@ -37,7 +37,7 @@ public class LineService {
 
     public Line updateLine(Long id, Line lineDetails) {
         Line line = lineRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Line not found with id: " + id));
+                    .orElseThrow(() -> new RuntimeException("Line not found with id: " + id));
 
         line.setName(lineDetails.getName());
         line.setType(lineDetails.getType());
