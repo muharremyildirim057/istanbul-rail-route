@@ -3,6 +3,7 @@ package project.istanbulrailroute.application.services;
 import org.springframework.stereotype.Service;
 import project.istanbulrailroute.domain.models.Line;
 import project.istanbulrailroute.infrastructure.LineRepository;
+import project.istanbulrailroute.infrastructure.StationConnectionRepository;
 import project.istanbulrailroute.presentation.dto.routeDto.LineAdminResponseDto;
 import project.istanbulrailroute.presentation.dto.routeDto.LineDetailedDto;
 
@@ -13,9 +14,11 @@ import java.util.stream.Collectors;
 public class LineService {
 
     private final LineRepository lineRepository;
+    private final StationConnectionRepository connectionRepository;
 
-    public LineService(LineRepository lineRepository) {
+    public LineService(LineRepository lineRepository, StationConnectionRepository connectionRepository) {
         this.lineRepository = lineRepository;
+        this.connectionRepository = connectionRepository;
     }
 
     public List<LineAdminResponseDto> getAllLines() {
@@ -46,6 +49,12 @@ public class LineService {
         Line line = lineRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Line not found with id: " + id));
 
+        boolean hasActiveConnections = connectionRepository.existsByLineId(id);
+
+        if (hasActiveConnections) {
+            throw new RuntimeException("Error: Cannot delete line. There are active connections linked to this line. Delete them first.");
+        }
+
         lineRepository.delete(line);
     }
 
@@ -53,7 +62,8 @@ public class LineService {
         List<Line> lines = lineRepository.findAll();
 
         return lines.stream().map(line -> {
-            List<String> stations = line.getConnections().stream()
+            List<String> stations = connectionRepository.findAll().stream()
+                    .filter(conn -> conn.getLine().getId().equals(line.getId()))
                     .flatMap(conn -> java.util.stream.Stream.of(conn.getStartStation().getName(), conn.getTargetStation().getName()))
                     .distinct()
                     .collect(Collectors.toList());

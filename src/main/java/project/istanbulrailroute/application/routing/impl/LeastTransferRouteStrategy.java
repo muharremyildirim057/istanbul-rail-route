@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import project.istanbulrailroute.application.routing.RouteCalculationStrategy;
 import project.istanbulrailroute.domain.models.StationConnection;
 import project.istanbulrailroute.infrastructure.StationConnectionRepository;
+import project.istanbulrailroute.domain.models.enums.StationStatus;
 
 import java.util.*;
 
@@ -46,9 +47,23 @@ public class LeastTransferRouteStrategy implements RouteCalculationStrategy {
             visited.add(currentNode);
 
             List<StationConnection> neighbors = graph.getOrDefault(currentNode, new ArrayList<>());
+
+            boolean isCurrentStationClosed = false;
+            if (!neighbors.isEmpty()) {
+                StationStatus status = neighbors.get(0).getStartStation().getStatus();
+                if (status != StationStatus.ACTIVE) {
+                    isCurrentStationClosed = true;
+                }
+            }
+
             for (StationConnection edge : neighbors) {
                 Long neighborNode = edge.getTargetStation().getId();
                 if (visited.contains(neighborNode)) continue;
+
+                // KURAL: Eğer durak kapalıysa ve hat değişiyorsa (aktarma yapılıyorsa) bu yolu es geç!
+                if (isCurrentStationClosed && current.lineId != null && !current.lineId.equals(edge.getLine().getId())) {
+                    continue;
+                }
 
                 double weight = 0.0001;
 

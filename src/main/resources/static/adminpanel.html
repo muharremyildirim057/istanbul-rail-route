@@ -47,6 +47,15 @@
         .delete-btn:hover { background: #ff6b6b; color: #fff; }
         .status-select { padding: 6px; font-size: 13px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; }
         .limit-info { font-size: 11px; color: #a2a2a2; text-align: right; margin-top: 5px; }
+
+        /* YENİ EKLENEN HYBRID DROPDOWN CSS KODLARI */
+        .custom-select { position: relative; width: 100%; }
+        .dropdown-list { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #16213e; border: 1px solid #e94560; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-top: 5px; }
+        .dropdown-item { padding: 12px 15px; cursor: pointer; transition: background 0.2s; font-size: 14px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: #e94560; }
+        .dropdown-list::-webkit-scrollbar { width: 6px; }
+        .dropdown-list::-webkit-scrollbar-thumb { background: #e94560; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -137,11 +146,19 @@
                 <div class="row">
                     <div class="col form-group">
                         <label>Source Station</label>
-                        <select id="connStartId" required><option value="">Select Source</option></select>
+                        <div class="custom-select">
+                            <input type="text" id="connStartInput" placeholder="Select or type..." autocomplete="off" required>
+                            <input type="hidden" id="connStartId" required>
+                            <div class="dropdown-list" id="connStartDropdown"></div>
+                        </div>
                     </div>
                     <div class="col form-group">
                         <label>Target Station</label>
-                        <select id="connTargetId" required><option value="">Select Target</option></select>
+                        <div class="custom-select">
+                            <input type="text" id="connTargetInput" placeholder="Select or type..." autocomplete="off" required>
+                            <input type="hidden" id="connTargetId" required>
+                            <div class="dropdown-list" id="connTargetDropdown"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="row">
@@ -215,7 +232,10 @@
             const stRes = await fetch('/api/stations');
             if (stRes.ok) globalStations = await stRes.json();
             renderStations(document.getElementById('searchStations').value);
-            populateStationSelects();
+
+            // YENİ EKLENEN DROPDOWN BAŞLATICI
+            setupDropdown('connStartInput', 'connStartId', 'connStartDropdown');
+            setupDropdown('connTargetInput', 'connTargetId', 'connTargetDropdown');
 
             const lnRes = await fetch('/api/lines');
             if (lnRes.ok) globalLines = await lnRes.json();
@@ -230,10 +250,51 @@
         }
     }
 
-    function populateStationSelects() {
-        const optionsHtml = '<option value="">Select Station</option>' + globalStations.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-        document.getElementById('connStartId').innerHTML = optionsHtml;
-        document.getElementById('connTargetId').innerHTML = optionsHtml;
+    function setupDropdown(inputId, hiddenId, dropdownId) {
+        const input = document.getElementById(inputId);
+        const hidden = document.getElementById(hiddenId);
+        const dropdown = document.getElementById(dropdownId);
+
+        input.addEventListener('focus', () => {
+            dropdown.style.display = 'block';
+            renderDropdownList(input.value, dropdown, input, hidden);
+        });
+
+        input.addEventListener('input', (e) => {
+            dropdown.style.display = 'block';
+            renderDropdownList(e.target.value, dropdown, input, hidden);
+            hidden.value = '';
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+                if(!hidden.value) input.value = '';
+            }
+        });
+    }
+
+    function renderDropdownList(filter, dropdown, input, hidden) {
+        dropdown.innerHTML = '';
+        const searchStr = (filter || '').toLocaleLowerCase('tr-TR');
+        const filtered = globalStations.filter(s => s.name.toLocaleLowerCase('tr-TR').includes(searchStr));
+
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div class="dropdown-item" style="color:#a2a2a2; cursor:default;">No station found</div>';
+            return;
+        }
+
+        filtered.forEach(station => {
+            const div = document.createElement('div');
+            div.className = 'dropdown-item';
+            div.textContent = station.name;
+            div.addEventListener('click', () => {
+                input.value = station.name;
+                hidden.value = station.id;
+                dropdown.style.display = 'none';
+            });
+            dropdown.appendChild(div);
+        });
     }
 
     function populateLineSelects() {
@@ -302,64 +363,101 @@
             </tr>`).join('');
     }
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı DELETE isteklerine eklendi
     async function deleteStation(id) {
         if (!confirm('Are you sure you want to delete this station? (May cause errors if lines are connected)')) return;
-        const res = await fetch(`/api/stations/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/stations/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-Username': localStorage.getItem('username') }
+        });
         if (res.ok) { showMessage('Station deleted.', true); loadAllData(); }
         else { showMessage('Error: You must first delete the Connections linked to this station.', false); }
     }
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı DELETE isteklerine eklendi
     async function deleteLine(id) {
         if (!confirm('Are you sure you want to delete this line? (May cause errors if stations are connected)')) return;
-        const res = await fetch(`/api/lines/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/lines/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-Username': localStorage.getItem('username') }
+        });
         if (res.ok) { showMessage('Line deleted.', true); loadAllData(); }
         else { showMessage('Error: You must first delete the Connections linked to this line.', false); }
     }
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı DELETE isteklerine eklendi
     async function deleteConnection(id) {
         if (!confirm('Are you sure you want to delete this connection?')) return;
-        const res = await fetch(`/api/stations/connections/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/stations/connections/${id}`, {
+            method: 'DELETE',
+            headers: { 'X-Username': localStorage.getItem('username') }
+        });
         if (res.ok) { showMessage('Connection deleted.', true); loadAllData(); }
         else { showMessage('Error occurred while deleting connection.', false); }
     }
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı PUT isteklerine eklendi
     async function updateStationStatus(id, newStatus) {
-        const res = await fetch(`/api/admin/stations/${id}/status?newStatus=${newStatus}`, { method: 'PUT' });
+        const res = await fetch(`/api/admin/stations/${id}/status?newStatus=${newStatus}`, {
+            method: 'PUT',
+            headers: { 'X-Username': localStorage.getItem('username') }
+        });
         if (res.ok) { showMessage('Status updated.', true); loadAllData(); }
         else { showMessage('Failed to update status.', false); }
     }
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı POST isteklerine eklendi
     document.getElementById('stationForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const res = await fetch('/api/stations', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Username': localStorage.getItem('username')
+            },
             body: JSON.stringify({ name: document.getElementById('stationName').value, status: 'ACTIVE' })
         });
         if (res.ok) { showMessage('Station added successfully!', true); document.getElementById('stationForm').reset(); loadAllData(); }
         else showMessage('Failed to add station.', false);
     });
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı POST isteklerine eklendi
     document.getElementById('lineForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const res = await fetch('/api/lines', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Username': localStorage.getItem('username')
+            },
             body: JSON.stringify({ name: document.getElementById('lineName').value, type: document.getElementById('lineType').value })
         });
         if (res.ok) { showMessage('Line created successfully!', true); document.getElementById('lineForm').reset(); loadAllData(); }
         else showMessage('Failed to create line.', false);
     });
 
+    // GÜVENLİK EKLENDİ: X-Username Header'ı POST isteklerine eklendi
     document.getElementById('connectionForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const startId = document.getElementById('connStartId').value;
         const targetId = document.getElementById('connTargetId').value;
-        if (startId === targetId) { showMessage('Source and Target stations cannot be the same.', false); return; }
+
+        if (!startId || !targetId) {
+            showMessage('Please select valid Source and Target stations from the list.', false);
+            return;
+        }
+
+        if (startId === targetId) {
+            showMessage('Source and Target stations cannot be the same.', false);
+            return;
+        }
 
         const res = await fetch('/api/stations/connections', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Username': localStorage.getItem('username')
+            },
             body: JSON.stringify({
                 startStationId: startId,
                 targetStationId: targetId,
@@ -367,7 +465,13 @@
                 duration: document.getElementById('connDuration').value
             })
         });
-        if (res.ok) { showMessage('Stations connected successfully!', true); document.getElementById('connectionForm').reset(); loadAllData(); }
+        if (res.ok) {
+            showMessage('Stations connected successfully!', true);
+            document.getElementById('connectionForm').reset();
+            document.getElementById('connStartId').value = '';
+            document.getElementById('connTargetId').value = '';
+            loadAllData();
+        }
         else showMessage('Failed to connect stations.', false);
     });
 </script>

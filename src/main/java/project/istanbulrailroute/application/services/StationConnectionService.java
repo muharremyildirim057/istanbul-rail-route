@@ -31,6 +31,17 @@ public class StationConnectionService {
 
     @Transactional
     public void createBidirectionalConnection(ConnectionRequestDto request) {
+
+        boolean exists = connectionRepository.existsByStartStationIdAndTargetStationIdAndLineId(
+                request.getStartStationId(),
+                request.getTargetStationId(),
+                request.getLineId()
+        );
+
+        if (exists) {
+            throw new RuntimeException("Error: A connection already exists between these stations for the selected line!");
+        }
+
         Station start = stationRepository.findById(request.getStartStationId())
                 .orElseThrow(() -> new RuntimeException("Start station not found."));
 
@@ -67,7 +78,23 @@ public class StationConnectionService {
         )).collect(Collectors.toList());
     }
 
+    @Transactional
     public void deleteConnection(Long id) {
-        connectionRepository.deleteById(id);
+        StationConnection conn = connectionRepository.findById(id).orElse(null);
+        if (conn != null) {
+            // 1. Orijinal bağlantının "Tam Tersini" (B -> A) veritabanında ara ve sil
+            connectionRepository.findFirstByStartStationIdAndTargetStationId(
+                    conn.getTargetStation().getId(),
+                    conn.getStartStation().getId()
+            ).ifPresent(reverseConn -> {
+                // Sadece aynı hatta ait ters bağlantıyı sildiğimizden emin oluyoruz
+                if (reverseConn.getLine().getId().equals(conn.getLine().getId())) {
+                    connectionRepository.delete(reverseConn);
+                }
+            });
+
+            // 2. Tıklanan orijinal bağlantıyı (A -> B) sil
+            connectionRepository.delete(conn);
+        }
     }
 }

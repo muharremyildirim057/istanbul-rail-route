@@ -31,5 +31,4 @@ public class Station {
     @ToString.Exclude
     private List<StationConnection> connections = new ArrayList<>();
 
-
 }

@@ -3,16 +3,18 @@ package project.istanbulrailroute.application.routing.impl;
 import org.springframework.stereotype.Service;
 import project.istanbulrailroute.application.routing.RouteCalculationStrategy;
 import project.istanbulrailroute.domain.models.StationConnection;
+import project.istanbulrailroute.domain.models.enums.LineType;
 import project.istanbulrailroute.infrastructure.StationConnectionRepository;
+import project.istanbulrailroute.domain.models.enums.StationStatus;
 
 import java.util.*;
 
-@Service("shortestTimeStrategy")
-public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
+@Service("cheapestFareStrategy")
+public class CheapestFareRouteStrategy implements RouteCalculationStrategy {
 
     private final StationConnectionRepository connectionRepository;
 
-    public ShortestTimeRouteStrategy(StationConnectionRepository connectionRepository) {
+    public CheapestFareRouteStrategy(StationConnectionRepository connectionRepository) {
         this.connectionRepository = connectionRepository;
     }
 
@@ -47,14 +49,35 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
 
             List<StationConnection> neighbors = graph.getOrDefault(currentNode, new ArrayList<>());
 
+            // AKTARMA KONTROLÜ İÇİN İSTASYONUN DURUMUNU ÖĞRENME
+            boolean isCurrentStationClosed = false;
+            if (!neighbors.isEmpty()) {
+                StationStatus status = neighbors.get(0).getStartStation().getStatus();
+                if (status != StationStatus.ACTIVE) {
+                    isCurrentStationClosed = true;
+                }
+            }
+
             for (StationConnection edge : neighbors) {
                 Long neighborNode = edge.getTargetStation().getId();
                 if (visited.contains(neighborNode)) continue;
 
-                double weight = edge.getDuration();
+                // KURAL: Eğer durak kapalıysa ve hat değişiyorsa (aktarma yapılıyorsa) bu yolu es geç!
+                if (isCurrentStationClosed && current.lineId != null && !current.lineId.equals(edge.getLine().getId())) {
+                    continue;
+                }
 
+                // ÜCRET (MALİYET) HESAPLAMA MANTIĞI
+                double weight = 1.0; // Temel durak geçiş maliyeti
+
+                // Eğer hat Banliyö (Marmaray) ise durak başı ücret artar (Mesafe bazlı ücretlendirme)
+                if (edge.getLine().getType() == LineType.BANLIYO) {
+                    weight += 2.0;
+                }
+
+                // Eğer aktarma yapılıyorsa ek ücret maliyeti (Ağırlığı) biner
                 if (current.lineId != null && !current.lineId.equals(edge.getLine().getId())) {
-                    weight += 5.0;
+                    weight += 15.0; // Aktarma yapmaktan kaçınması için yüksek maliyet
                 }
 
                 double newDist = distances.getOrDefault(currentNode, 0.0) + weight;
@@ -84,7 +107,7 @@ public class ShortestTimeRouteStrategy implements RouteCalculationStrategy {
 
     @Override
     public String getStrategyName() {
-        return "SHORTEST_TIME";
+        return "CHEAPEST_FARE";
     }
 
     private static class NodeDistance {
